@@ -8,17 +8,35 @@ import "io/ioutil"
 import "os"
 import "archive/tar"
 import "bytes"
+import "github.com/docker/engine-api/client"
+import "github.com/docker/engine-api/types"
+import "golang.org/x/net/context"
 
 func main() {
 	log.Info("starting build server")
 
+	defaultHeaders := map[string]string{"User-Agent": "engine-api"}
+	cl, err := client.NewClient("unix:///var/run/docker.sock", "v1.18", nil, defaultHeaders)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	r := gin.Default()
 
-	r.GET("/", func (c *gin.Context) {
+	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"msg": "hello"})
 	})
 
-	r.POST("/tar", func (c *gin.Context) {
+	r.GET("/docker/containers", func(c *gin.Context) {
+		options := types.ContainerListOptions{All: true}
+		containers, err := cl.ContainerList(context.Background(), options)
+		if err != nil {
+			log.Fatal(err)
+		}
+		c.JSON(http.StatusOK, gin.H{"containers": containers})
+	})
+
+	r.POST("/tar", func(c *gin.Context) {
 		// get file
 		file, header, err := c.Request.FormFile("f")
 		if err != nil {
@@ -47,7 +65,7 @@ func main() {
 		}
 	})
 
-	r.POST("/upload", func (c *gin.Context) {
+	r.POST("/upload", func(c *gin.Context) {
 		// get file
 		file, header, err := c.Request.FormFile("f")
 		if err != nil {
