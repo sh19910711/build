@@ -10,13 +10,14 @@ import "archive/tar"
 import "bytes"
 import "github.com/docker/engine-api/client"
 import "github.com/docker/engine-api/types"
+import "github.com/docker/engine-api/types/container"
 import "golang.org/x/net/context"
 
 func main() {
 	log.Info("starting build server")
 
 	defaultHeaders := map[string]string{"User-Agent": "engine-api"}
-	cl, err := client.NewClient("unix:///var/run/docker.sock", "v1.18", nil, defaultHeaders)
+	client, err := client.NewClient("unix:///var/run/docker.sock", "v1.18", nil, defaultHeaders)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -29,12 +30,40 @@ func main() {
 
 	r.GET("/docker/containers", func(c *gin.Context) {
 		options := types.ContainerListOptions{All: true}
-		containers, err := cl.ContainerList(context.Background(), options)
+		containers, err := client.ContainerList(context.Background(), options)
 		if err != nil {
 			log.Fatal(err)
 		}
 		c.JSON(http.StatusOK, gin.H{"containers": containers})
 	})
+
+  // exec test
+  r.GET("/docker/exec", func(c *gin.Context) {
+    // create container
+    config := container.Config{
+      Image: "ubuntu:16.04",
+      Cmd: []string{"sleep", "3"},
+    }
+    worker, err := client.ContainerCreate(context.Background(), &config, nil, nil, "")
+    if err != nil {
+      log.Fatal(err)
+    }
+    log.Info(worker.ID)
+
+    // exec
+    ctx := context.Background()
+    ec := types.ExecConfig{
+      Cmd: []string{"echo", "hello"},
+    }
+    res, err := client.ContainerExecCreate(ctx, worker.ID, ec)
+    if err != nil {
+      log.Fatal(err)
+    }
+    execID := res.ID
+    if execID == "" {
+      log.Fatal("exec id empty")
+    }
+  })
 
 	r.POST("/tar", func(c *gin.Context) {
 		// get file
