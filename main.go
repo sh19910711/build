@@ -5,6 +5,7 @@ import "github.com/gin-gonic/gin"
 import "net/http"
 import "io"
 import "io/ioutil"
+import "bufio"
 import "os"
 import "archive/tar"
 import "bytes"
@@ -37,33 +38,44 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"containers": containers})
 	})
 
-  // exec test
-  r.GET("/docker/exec", func(c *gin.Context) {
-    // create container
-    config := container.Config{
-      Image: "ubuntu:16.04",
-      Cmd: []string{"sleep", "3"},
-    }
-    worker, err := client.ContainerCreate(context.Background(), &config, nil, nil, "")
-    if err != nil {
-      log.Fatal(err)
-    }
-    log.Info(worker.ID)
+	// exec test
+	r.GET("/docker/exec", func(c *gin.Context) {
+		// create container
+		config := container.Config{
+			Image: "ubuntu:16.04",
+			Cmd:   []string{"sleep", "3"},
+		}
+		worker, err := client.ContainerCreate(context.Background(), &config, nil, nil, "")
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Info(worker.ID)
 
-    // exec
-    ctx := context.Background()
-    ec := types.ExecConfig{
-      Cmd: []string{"echo", "hello"},
-    }
-    res, err := client.ContainerExecCreate(ctx, worker.ID, ec)
-    if err != nil {
-      log.Fatal(err)
-    }
-    execID := res.ID
-    if execID == "" {
-      log.Fatal("exec id empty")
-    }
-  })
+		// copy script
+		ctx := context.Background()
+		f, err := os.Open("./script/build.sh")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+		err = client.CopyToContainer(ctx, worker.ID, "/build.sh", bufio.NewReader(f), types.CopyToContainerOptions{})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// exec
+		ec := types.ExecConfig{
+			Cmd: []string{"bash /build.sh"},
+		}
+		res, err := client.ContainerExecCreate(ctx, worker.ID, ec)
+		if err != nil {
+			log.Fatal(err)
+		}
+		execID := res.ID
+		if execID == "" {
+			log.Fatal("exec id empty")
+		}
+	})
 
 	r.POST("/tar", func(c *gin.Context) {
 		// get file

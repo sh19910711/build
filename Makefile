@@ -1,9 +1,9 @@
+.PHONY: build
 build:
 	govendor sync
 	go build -i
 
-run:
-	govendor sync
+run: build
 	go run main.go
 
 fmt:
