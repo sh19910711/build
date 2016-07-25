@@ -14,7 +14,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	_ "time"
 )
 
 const DOCKER_ENDPOINT = "unix:///var/run/docker.sock"
