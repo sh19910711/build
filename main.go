@@ -12,6 +12,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path"
 	_ "time"
 )
@@ -91,8 +92,46 @@ func (w *worker) CopyFile(src string, dst string) error {
 	return w.Copy(r, dst)
 }
 
+func (w *worker) CopyFromWorker(src, dstPrefix string) error {
+	// get file from worker (as a tar-ball archive)
+	r, _, err := w.c.CopyFromContainer(w.ctx, w.id, src)
+	if err != nil {
+		return err
+	}
+
+	// extract artifacts from archive
+	tr := tar.NewReader(r)
+
+	// iterate through the files
+	for {
+		header, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// write
+		log.Info("artifacts: ", header.Name)
+		f, err := os.OpenFile(dstPrefix+"/"+header.Name, os.O_WRONLY|os.O_CREATE, os.FileMode(header.Mode))
+		if err != nil {
+			log.Fatal(err)
+		}
+		if _, err := io.Copy(f, tr); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	return nil
+}
+
 func (w *worker) Start() error {
 	return w.c.ContainerStart(w.ctx, w.id, types.ContainerStartOptions{})
+}
+
+func (w *worker) Wait() (int, error) {
+	return w.c.ContainerWait(w.ctx, w.id)
 }
 
 func main() {
@@ -137,6 +176,16 @@ func main() {
 			log.Fatal(err)
 		}
 		log.Info("worker has been started")
+
+		// wait a worker
+		exitCode, err := w.Wait()
+		log.Info("worker has been exited with ", exitCode)
+
+		// test to get an artifact
+		if err := w.CopyFromWorker("/app/app", "./tmp"); err != nil {
+			log.Fatal(err)
+		}
+		log.Info("success build")
 	})
 
 	r.Run()
