@@ -16,19 +16,20 @@ import "github.com/docker/engine-api/types/container"
 import "golang.org/x/net/context"
 
 const DOCKER_ENDPOINT = "unix:///var/run/docker.sock"
-const DOCKER_VERSION = "v1.18"
+const DOCKER_API_VERSION = "v1.18"
 
 func newWorker() (w worker, err error) {
 	headers := map[string]string{
 		"User-Agent": "engine-api",
 	}
-	w.c, err = client.NewClient(DOCKER_ENDPOINT, DOCKER_VERSION, nil, headers)
+	w.c, err = client.NewClient(DOCKER_ENDPOINT, DOCKER_API_VERSION, nil, headers)
 	return w, err
 }
 
 type worker struct {
 	c  *client.Client
 	id string
+  ctx context.Context
 }
 
 func (w *worker) Create() (err error) {
@@ -37,7 +38,8 @@ func (w *worker) Create() (err error) {
 		Cmd:   []string{"bash", "/build.bash"},
 	}
 
-	c, err := w.c.ContainerCreate(context.Background(), &config, nil, nil, "")
+  w.ctx = context.Background()
+	c, err := w.c.ContainerCreate(w.ctx, &config, nil, nil, "")
 	if err != nil {
 		return err
 	}
@@ -74,21 +76,24 @@ func archive(src string) (*bytes.Reader, error) {
 	return bytes.NewReader(buf.Bytes()), nil
 }
 
-func (w *worker) Copy(src string, dst string) error {
+func (w *worker) Copy(r io.Reader, dst string) error {
+  opts := types.CopyToContainerOptions{
+    AllowOverwriteDirWithFile: true,
+  }
+  return w.c.CopyToContainer(w.ctx, w.id, dst, r, opts)
+}
+
+func (w *worker) CopyFile(src string, dst string) error {
 	r, err := archive(src)
 	if err != nil {
 		return err
 	}
-	if err := w.c.CopyToContainer(context.Background(), w.id, "/", r, types.CopyToContainerOptions{}); err != nil {
-		return err
-	}
-	log.Info(w.id, ": copy ", src, " => ", dst)
-	return nil
+  log.Info(src, " has been archived as a tar ball")
+  return w.Copy(r, dst)
 }
 
 func (w *worker) Start() error {
-	log.Info(w.id, ": start")
-	return w.c.ContainerStart(context.Background(), w.id, types.ContainerStartOptions{})
+	return w.c.ContainerStart(w.ctx, w.id, types.ContainerStartOptions{})
 }
 
 func main() {
@@ -105,12 +110,41 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"msg": "hello"})
 	})
 
+  r.POST("/builds", func(c *gin.Context) {
+    // create a worker
+    if err := w.Create(); err != nil {
+      log.Fatal(err)
+    }
+    log.Info("worker has been created")
+
+    // send script
+    if err := w.CopyFile("./script/build.bash", "/"); err != nil {
+      log.Fatal("script: ", err)
+    }
+    log.Info("script has been sent")
+
+    // send app
+    file, _, err := c.Request.FormFile("f")
+    if err != nil {
+      log.Fatal(err)
+    }
+    if err := w.Copy(file, "/app"); err != nil {
+      log.Fatal("app: ", err)
+    }
+    log.Info("app has been sent")
+
+    // start a worker
+    if err := w.Start(); err != nil {
+      log.Fatal(err)
+    }
+  })
+
 	r.GET("/docker/exec", func(c *gin.Context) {
 		if err := w.Create(); err != nil {
 			log.Fatal(err)
 		}
 
-		if err := w.Copy("./script/build.bash", "/"); err != nil {
+		if err := w.CopyFile("./script/build.bash", "/"); err != nil {
 			log.Fatal(err)
 		}
 
