@@ -179,6 +179,9 @@ func main() {
 
 		// wait a worker
 		exitCode, err := w.Wait()
+		if err != nil {
+			log.Fatal(err)
+		}
 		log.Info("worker has been exited with ", exitCode)
 
 		// test to get an artifact
