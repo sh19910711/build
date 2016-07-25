@@ -1,0 +1,11 @@
+FROM ubuntu:16.04
+
+RUN apt-get update
+RUN apt-get install -y gcc
+RUN apt-get install -y make
+
+RUN mkdir -p /app
+RUN useradd -m user
+RUN chown -R user. /app
+WORKDIR /app
+USER user
