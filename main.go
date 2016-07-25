@@ -3,9 +3,9 @@ package main
 import log "github.com/Sirupsen/logrus"
 import "github.com/gin-gonic/gin"
 import "net/http"
+import _ "time"
 import "io"
 import "io/ioutil"
-import "bufio"
 import "os"
 import "archive/tar"
 import "bytes"
@@ -42,39 +42,45 @@ func main() {
 	r.GET("/docker/exec", func(c *gin.Context) {
 		// create container
 		config := container.Config{
-			Image: "ubuntu:16.04",
-			Cmd:   []string{"sleep", "3"},
+			Image: "curl",
+			Cmd:   []string{"bash", "/build.bash"},
+			// AttachStdin: true,
+			// Tty: true,
 		}
 		worker, err := client.ContainerCreate(context.Background(), &config, nil, nil, "")
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Info(worker.ID)
+		log.Info("created: ", worker.ID)
 
-		// copy script
-		ctx := context.Background()
-		f, err := os.Open("./script/build.sh")
+		// open
+		f, err := os.Open("./script/build.tar")
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer f.Close()
-		err = client.CopyToContainer(ctx, worker.ID, "/build.sh", bufio.NewReader(f), types.CopyToContainerOptions{})
-		if err != nil {
-			log.Fatal(err)
-		}
 
-		// exec
-		ec := types.ExecConfig{
-			Cmd: []string{"bash /build.sh"},
-		}
-		res, err := client.ContainerExecCreate(ctx, worker.ID, ec)
+		// copy script
+		err = client.CopyToContainer(context.Background(), worker.ID, "/", f, types.CopyToContainerOptions{})
 		if err != nil {
 			log.Fatal(err)
 		}
-		execID := res.ID
-		if execID == "" {
-			log.Fatal("exec id empty")
+		log.Info("copied: build.bash")
+
+		// start container
+		err = client.ContainerStart(context.Background(), worker.ID, types.ContainerStartOptions{})
+		if err != nil {
+			log.Fatal(err)
 		}
+		log.Info("started: ", worker.ID)
+
+		// stop
+		// t := 0*time.Second
+		// err = client.ContainerStop(context.Background(), worker.ID, &t)
+		// if err != nil {
+		//   log.Fatal(err)
+		// }
+		// log.Info("stopped: ", worker.ID)
 	})
 
 	r.POST("/tar", func(c *gin.Context) {
