@@ -112,7 +112,7 @@ func (w *worker) CopyFromWorker(ctx context.Context, src, dstPrefix string) erro
 		}
 
 		// write
-		log.Info("artifacts: ", header.Name)
+		log.Debug("artifacts: ", header.Name)
 		f, err := os.OpenFile(dstPrefix+"/"+header.Name, os.O_WRONLY|os.O_CREATE, os.FileMode(header.Mode))
 		defer f.Close()
 		if err != nil {

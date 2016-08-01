@@ -23,19 +23,19 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Info("worker has been initialized")
+		log.Debug("worker has been initialized")
 
 		// create a worker
 		if err := w.Create(ctx); err != nil {
 			log.Fatal(err)
 		}
-		log.Info("worker has been created")
+		log.Debug("worker has been created")
 
 		// send script
 		if err := w.CopyFile(ctx, "./script/build.bash", "/"); err != nil {
 			log.Fatal(err)
 		}
-		log.Info("script has been sent to worker")
+		log.Debug("script has been sent to worker")
 
 		// send app
 		file, _, err := c.Request.FormFile("f")
@@ -45,26 +45,26 @@ func main() {
 		if err := w.Copy(ctx, file, "/app"); err != nil {
 			log.Fatal(err)
 		}
-		log.Info("app has been sent to worker")
+		log.Debug("app has been sent to worker")
 
 		// start a worker
 		if err := w.Start(ctx); err != nil {
 			log.Fatal(err)
 		}
-		log.Info("worker has been started")
+		log.Debug("worker has been started")
 
 		// wait a worker
 		exitCode, err := w.Wait(ctx)
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Info("worker has been exited with ", exitCode)
+		log.Debug("worker has been exited with ", exitCode)
 
 		// test to get an artifact
 		if err := w.CopyFromWorker(ctx, "/app/app", "./tmp"); err != nil {
 			log.Fatal(err)
 		}
-		log.Info("success build")
+		log.Debug("success build")
 	})
 
 	r.Run()
