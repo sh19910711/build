@@ -2,6 +2,9 @@ language: go
 
 go: 1.6
 
+install:
+  - make init
+
 script:
   - make build
   - make run &
