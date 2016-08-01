@@ -14,6 +14,7 @@ script:
   - make run &
   - sleep 7
   - curl --form "f=@example/app.tar" http://localhost:8080/builds
+  - ./tmp/app
 
 cache:
   directories:
