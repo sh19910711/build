@@ -26,7 +26,7 @@ func main() {
 		log.Debug("worker has been initialized")
 
 		// create a worker
-		if err := w.Create(ctx); err != nil {
+		if err := w.Create(ctx, "build", "bash /build.bash"); err != nil {
 			log.Fatal(err)
 		}
 		log.Debug("worker has been created")

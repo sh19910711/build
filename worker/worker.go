@@ -1,17 +1,18 @@
 package worker
 
-import(
-	log "github.com/Sirupsen/logrus"
-	"bytes"
+import (
 	"archive/tar"
-	"io/ioutil"
-	"path"
-	"io"
-	"os"
-	"golang.org/x/net/context"
+	"bytes"
+	log "github.com/Sirupsen/logrus"
 	"github.com/docker/engine-api/client"
 	"github.com/docker/engine-api/types"
 	"github.com/docker/engine-api/types/container"
+	"golang.org/x/net/context"
+	"io"
+	"io/ioutil"
+	"os"
+	"path"
+	"strings"
 )
 
 const DOCKER_ENDPOINT = "unix:///var/run/docker.sock"
@@ -26,14 +27,14 @@ func New() (w worker, err error) {
 }
 
 type worker struct {
-	c   *client.Client
-	id  string
+	c  *client.Client
+	id string
 }
 
-func (w *worker) Create(ctx context.Context) (err error) {
+func (w *worker) Create(ctx context.Context, imageName string, cmd string) (err error) {
 	config := container.Config{
-		Image: "build",
-		Cmd:   []string{"bash", "/build.bash"},
+		Image: imageName,
+		Cmd:   strings.Split(cmd, " "),
 	}
 
 	c, err := w.c.ContainerCreate(ctx, &config, nil, nil, "")
@@ -132,4 +133,8 @@ func (w *worker) Start(ctx context.Context) error {
 
 func (w *worker) Wait(ctx context.Context) (int, error) {
 	return w.c.ContainerWait(ctx, w.id)
+}
+
+func (w *worker) Destroy(ctx context.Context) error {
+	return w.c.ContainerRemove(ctx, w.id, types.ContainerRemoveOptions{})
 }
