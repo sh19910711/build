@@ -10,3 +10,7 @@ script:
   - make run &
   - sleep 2
   - curl --form "f=@example/app.tar" http://localhost:8080/builds
+
+cache:
+  directories:
+    - vendor
