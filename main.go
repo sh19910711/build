@@ -93,7 +93,7 @@ func (w *worker) CopyFile(src string, dst string) error {
 
 func (w *worker) CopyFromWorker(src, dstPrefix string) error {
 	// mkdir dstPrefix
-	if err := os.MkdirAll(dstPrefix, 0777); err != nil {
+	if err := os.MkdirAll(dstPrefix, 0755); err != nil {
 		return err
 	}
 	// get file from worker (as a tar-ball archive)
