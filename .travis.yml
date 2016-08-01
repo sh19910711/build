@@ -12,7 +12,7 @@ script:
   - make test
   - docker build -t build -f example/build.docker .
   - make run &
-  - sleep 5
+  - sleep 7
   - curl --form "f=@example/app.tar" http://localhost:8080/builds
 
 cache:
