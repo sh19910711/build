@@ -92,10 +92,10 @@ func (w *worker) CopyFile(src string, dst string) error {
 }
 
 func (w *worker) CopyFromWorker(src, dstPrefix string) error {
-  // mkdir dstPrefix
-  if err := os.MkdirAll(dstPrefix); err != nil {
-    return err
-  }
+	// mkdir dstPrefix
+	if err := os.MkdirAll(dstPrefix, os.ModeDir); err != nil {
+		return err
+	}
 	// get file from worker (as a tar-ball archive)
 	r, _, err := w.c.CopyFromContainer(w.ctx, w.id, src)
 	if err != nil {
