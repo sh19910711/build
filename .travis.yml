@@ -5,9 +5,10 @@ sudo: required
 install:
   - make init
   - make build
-  - docker build -t build -f example/build.docker .
 
 script:
+  - make test
+  - docker build -t build -f example/build.docker .
   - make run &
   - sleep 5
   - curl --form "f=@example/app.tar" http://localhost:8080/builds
