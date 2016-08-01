@@ -1,5 +1,6 @@
 language: go
 go: 1.6
+go_import_path: github.com/codestand/build
 sudo: required
 services:
   - docker
@@ -14,7 +15,6 @@ script:
   - make run &
   - sleep 7
   - curl --form "f=@example/app.tar" http://localhost:8080/builds
-  - ls -lha ./tmp
   - ./tmp/app
 
 cache:
