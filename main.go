@@ -92,6 +92,10 @@ func (w *worker) CopyFile(src string, dst string) error {
 }
 
 func (w *worker) CopyFromWorker(src, dstPrefix string) error {
+	// mkdir dstPrefix
+	if err := os.MkdirAll(dstPrefix, 0755); err != nil {
+		return err
+	}
 	// get file from worker (as a tar-ball archive)
 	r, _, err := w.c.CopyFromContainer(w.ctx, w.id, src)
 	if err != nil {
@@ -114,6 +118,7 @@ func (w *worker) CopyFromWorker(src, dstPrefix string) error {
 		// write
 		log.Info("artifacts: ", header.Name)
 		f, err := os.OpenFile(dstPrefix+"/"+header.Name, os.O_WRONLY|os.O_CREATE, os.FileMode(header.Mode))
+		defer f.Close()
 		if err != nil {
 			log.Fatal(err)
 		}
