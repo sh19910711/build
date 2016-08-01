@@ -118,6 +118,7 @@ func (w *worker) CopyFromWorker(src, dstPrefix string) error {
 		// write
 		log.Info("artifacts: ", header.Name)
 		f, err := os.OpenFile(dstPrefix+"/"+header.Name, os.O_WRONLY|os.O_CREATE, os.FileMode(header.Mode))
+		defer f.Close()
 		if err != nil {
 			log.Fatal(err)
 		}
