@@ -22,7 +22,11 @@ func New() (w worker, err error) {
 	headers := map[string]string{
 		"User-Agent": "engine-api",
 	}
-	w.c, err = client.NewClient(DOCKER_ENDPOINT, DOCKER_API_VERSION, nil, headers)
+	endpoint := os.Getenv("DOCKER_HOST")
+	if endpoint == "" {
+		endpoint = DOCKER_ENDPOINT
+	}
+	w.c, err = client.NewClient(endpoint, DOCKER_API_VERSION, nil, headers)
 	return w, err
 }
 
