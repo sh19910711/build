@@ -2,10 +2,13 @@ package jobqueue_test
 
 import (
 	"github.com/codestand/build/jobqueue"
+	"github.com/codestand/build/test/helper"
 	"testing"
 )
 
-type worker struct{}
+func init() {
+	helper.Init()
+}
 
 func TestPush(t *testing.T) {
 	jobqueue.Init()

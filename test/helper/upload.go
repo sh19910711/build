@@ -1,20 +1,13 @@
-package testhelper
+package helper
 
 import (
 	"bytes"
-	log "github.com/Sirupsen/logrus"
-	"github.com/gin-gonic/gin"
 	"io"
 	"mime/multipart"
 	"net/http"
-	"net/http/httptest"
 	"os"
 	"path/filepath"
 )
-
-func Init() {
-	log.SetLevel(log.DebugLevel)
-}
 
 func UploadRequest(url string, key string, path string, params map[string]string) (req *http.Request, err error) {
 	file, err := os.Open(path)
@@ -44,10 +37,4 @@ func UploadRequest(url string, key string, path string, params map[string]string
 	}
 	req.Header.Set("Content-Type", w.FormDataContentType())
 	return req, nil
-}
-
-func Serve(path string, handler func(c *gin.Context)) *httptest.Server {
-	r := gin.Default()
-	r.POST(path, handler)
-	return httptest.NewServer(r)
 }
