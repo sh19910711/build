@@ -31,8 +31,8 @@ func New() (w worker, err error) {
 }
 
 type worker struct {
-	c  *client.Client
 	id string
+	c  *client.Client // docker engine client
 }
 
 func (w *worker) Create(ctx context.Context, imageName string, cmd string) (err error) {
@@ -77,11 +77,11 @@ func archive(src string) (*bytes.Reader, error) {
 	return bytes.NewReader(buf.Bytes()), nil
 }
 
-func (w *worker) Copy(ctx context.Context, r io.Reader, dst string) error {
+func (w *worker) Copy(ctx context.Context, tar io.Reader, dst string) error {
 	opts := types.CopyToContainerOptions{
 		AllowOverwriteDirWithFile: true,
 	}
-	return w.c.CopyToContainer(ctx, w.id, dst, r, opts)
+	return w.c.CopyToContainer(ctx, w.id, dst, tar, opts)
 }
 
 func (w *worker) CopyFile(ctx context.Context, src string, dst string) error {
@@ -92,17 +92,7 @@ func (w *worker) CopyFile(ctx context.Context, src string, dst string) error {
 	return w.Copy(ctx, r, dst)
 }
 
-func (w *worker) CopyFromWorker(ctx context.Context, src, dstPrefix string) error {
-	// mkdir dstPrefix
-	if err := os.MkdirAll(dstPrefix, 0755); err != nil {
-		return err
-	}
-	// get file from worker (as a tar-ball archive)
-	r, _, err := w.c.CopyFromContainer(ctx, w.id, src)
-	if err != nil {
-		return err
-	}
-
+func untar(r io.Reader, dstPrefix string) error {
 	// extract artifacts from archive
 	tr := tar.NewReader(r)
 
@@ -113,7 +103,7 @@ func (w *worker) CopyFromWorker(ctx context.Context, src, dstPrefix string) erro
 			break
 		}
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		// write
@@ -121,14 +111,24 @@ func (w *worker) CopyFromWorker(ctx context.Context, src, dstPrefix string) erro
 		f, err := os.OpenFile(dstPrefix+"/"+header.Name, os.O_WRONLY|os.O_CREATE, os.FileMode(header.Mode))
 		defer f.Close()
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		if _, err := io.Copy(f, tr); err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
 	return nil
+}
+
+func (w *worker) CopyFromWorker(ctx context.Context, file string) (io.Reader, error) {
+	// get file from worker (as a tar-ball archive)
+	r, _, err := w.c.CopyFromContainer(ctx, w.id, file)
+	if err != nil {
+		return nil, err
+	}
+
+	return r, nil
 }
 
 func (w *worker) Start(ctx context.Context) error {
