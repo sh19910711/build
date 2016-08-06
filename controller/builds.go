@@ -29,7 +29,7 @@ func Create(c *gin.Context) {
 
 	log.Debug("3. push job to jobqueue")
 	job.Src = src
-	job.Callback = c.Param("callback")
+	job.Callback = c.PostForm("callback")
 	job.Image = "build"
 	job.Commands = []string{"make"}
 	job.Artifacts = []string{"/app/app"}

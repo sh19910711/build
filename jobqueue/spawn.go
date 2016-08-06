@@ -9,6 +9,7 @@ import (
 )
 
 func spawnJob(running job) {
+	log.Debug("jobqueue: running: ", running)
 	ctx := context.Background()
 
 	// new worker
