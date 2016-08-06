@@ -16,7 +16,7 @@ script:
   - make run &
   - sleep 7
   - curl --form "file=@example/app.tar" http://localhost:8080/builds
-  - sleep 3
+  - go run test/callback_server.go --timeout 3
   - ./tmp/app
 
 cache:
