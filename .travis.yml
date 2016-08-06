@@ -1,13 +1,13 @@
 language: go
 go: 1.6
 go_import_path: github.com/codestand/build
-# sudo: required
-# services:
-#   - docker
+sudo: required
+services:
+  - docker
 
 install:
   - make init
-  - tree vendor | grep uuid
+  - govendor list
   - make build
   - docker build -t build -f example/build.docker .
 
