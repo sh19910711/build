@@ -1,14 +1,14 @@
 package worker_test
 
 import (
-	"github.com/codestand/build/test/helper"
+	"github.com/codestand/build/test/testhelper"
 	"github.com/codestand/build/worker"
 	"golang.org/x/net/context"
 	"testing"
 )
 
 func init() {
-	helper.Init()
+	testhelper.Init()
 }
 
 func TestCreate(t *testing.T) {

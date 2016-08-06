@@ -2,12 +2,12 @@ package jobqueue_test
 
 import (
 	"github.com/codestand/build/jobqueue"
-	"github.com/codestand/build/test/helper"
+	"github.com/codestand/build/test/testhelper"
 	"testing"
 )
 
 func init() {
-	helper.Init()
+	testhelper.Init()
 }
 
 func TestPush(t *testing.T) {

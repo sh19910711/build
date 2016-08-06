@@ -16,7 +16,7 @@ script:
   - make test
   - PORT=8080 make run &
   - sleep 7
-  - curl --form "file=@example/app.tar&callback=http://localhost:8888/callback" http://localhost:8080/builds
+  - curl --form file=@example/app.tar --form callback=http://localhost:8888/callback http://localhost:8080/builds
   - PORT=8888 ./callback_server --timeout 3 || exit 1
   - ./tmp/app
 

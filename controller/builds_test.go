@@ -4,27 +4,27 @@ import (
 	"encoding/json"
 	"github.com/codestand/build/controller"
 	"github.com/codestand/build/jobqueue"
-	"github.com/codestand/build/test/helper"
+	"github.com/codestand/build/test/testhelper"
 	"net/http"
 	"testing"
 )
 
 func init() {
-	helper.Init()
+	testhelper.Init()
 }
 
 func TestCreate(t *testing.T) {
 	jobqueue.Init()
 
 	// start server
-	s := helper.Serve("/builds", controller.Create)
+	s := testhelper.Serve("/builds", controller.Create)
 	defer s.Close()
 
 	// prepare request
 	params := map[string]string{
 		"callback": s.URL + "/callback",
 	}
-	req, err := helper.UploadRequest(s.URL+"/builds", "file", "./example/app.tar", params)
+	req, err := testhelper.UploadRequest(s.URL+"/builds", "file", "./example/app.tar", params)
 	if err != nil {
 		t.Fatal(err)
 	}
