@@ -1,8 +1,10 @@
 package main
 
 import (
+	"archive/tar"
 	"flag"
 	"github.com/gin-gonic/gin"
+	"io"
 	"os"
 	"time"
 )
@@ -25,6 +27,33 @@ func main() {
 
 	// callback action
 	r.POST("/callback", func(c *gin.Context) {
+		r, _, err := c.Request.FormFile("file")
+		if err != nil {
+			panic(err)
+		}
+
+		// extract artifacts
+		tr := tar.NewReader(r)
+		for {
+			header, err := tr.Next()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				panic(err)
+			}
+
+			f, err := os.OpenFile("./tmp/"+header.Name, os.O_WRONLY|os.O_CREATE, os.FileMode(header.Mode))
+			if err != nil {
+				panic(err)
+			}
+			defer f.Close()
+
+			if _, err := io.Copy(f, tr); err != nil {
+				panic(err)
+			}
+		}
+
 		c.JSON(200, gin.H{"hello": "world"})
 		exitCode <- 0
 	})
