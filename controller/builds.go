@@ -32,6 +32,7 @@ func Create(c *gin.Context) {
 	job.Callback = c.Param("callback")
 	job.Image = "build"
 	job.Commands = []string{"make"}
+	job.Artifacts = []string{"/app/app"}
 	jobqueue.Push(job)
 
 	log.Debug("4. return job id")

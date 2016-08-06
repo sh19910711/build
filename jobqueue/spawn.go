@@ -2,6 +2,7 @@ package jobqueue
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/codestand/build/util"
 	"github.com/codestand/build/worker"
 	"golang.org/x/net/context"
 	"os"
@@ -52,9 +53,20 @@ func spawnJob(running job) {
 	}
 	log.Debug("jobqueue: worker has been exited with ", exitCode)
 
-	// test to get an artifact
-	if err := w.CopyFromWorker(ctx, "/app/app", "./tmp"); err != nil {
-		log.Fatal(err)
+	// send artifact to callback url
+	if running.Callback != "" {
+		artifacts, err := w.CopyFromWorker(ctx, "/app/app")
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Debug("jobqueue: artifacts is found")
+
+		if _, err := util.Upload(artifacts, running.Callback, "file", "artifacts.tar"); err != nil {
+			log.Fatal(err)
+		} else {
+			log.Debug("jobqueue: fired callback")
+		}
 	}
-	log.Debug("jobqueue: success build")
+
+	log.Debug("jobqueue: success :-)")
 }

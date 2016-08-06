@@ -5,11 +5,12 @@ import (
 )
 
 type job struct {
-	Id       string
-	Src      string
-	Callback string
-	Image    string
-	Commands []string
+	Id        string
+	Src       string
+	Callback  string
+	Image     string
+	Commands  []string
+	Artifacts []string
 }
 
 func NewJob() job {
