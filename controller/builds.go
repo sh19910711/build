@@ -9,25 +9,6 @@ import (
 	"os"
 )
 
-func save(r io.Reader, path string) error {
-	w, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		return err
-	}
-	if _, err := io.Copy(w, r); err != nil {
-		return err
-	}
-	return nil
-}
-
-func formfile(c *gin.Context) io.Reader {
-	r, _, err := c.Request.FormFile("file")
-	if err != nil {
-		log.Fatal("formfile: ", err)
-	}
-	return r
-}
-
 // POST /builds
 // - params[file] := tar-ball (required)
 // - params[callback] := URL fired after completed build (required)
@@ -55,4 +36,23 @@ func Create(c *gin.Context) {
 
 	log.Debug("4. return job id")
 	c.JSON(http.StatusOK, gin.H{"id": job.Id})
+}
+
+func save(r io.Reader, path string) error {
+	w, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	if _, err := io.Copy(w, r); err != nil {
+		return err
+	}
+	return nil
+}
+
+func formfile(c *gin.Context) io.Reader {
+	r, _, err := c.Request.FormFile("file")
+	if err != nil {
+		log.Fatal("formfile: ", err)
+	}
+	return r
 }
