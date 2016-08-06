@@ -20,6 +20,14 @@ func save(r io.Reader, path string) error {
 	return nil
 }
 
+func formfile(c *gin.Context) io.Reader {
+	r, _, err := c.Request.FormFile("file")
+	if err != nil {
+		log.Fatal("formfile: ", err)
+	}
+	return r
+}
+
 // POST /builds
 // - params[file] := tar-ball (required)
 // - params[callback] := URL fired after completed build (required)
@@ -29,9 +37,9 @@ func Create(c *gin.Context) {
 	job := jobqueue.NewJob()
 
 	log.Debug("2. save source to tmp")
-	r, _, err := c.Request.FormFile("file")
-	if err != nil {
-		log.Fatal("formfile: ", err)
+	r := formfile(c)
+	if err := os.MkdirAll("./tmp", 0700); err != nil {
+		log.Fatal(err)
 	}
 	src := "./tmp/" + job.Id
 	if err := save(r, src); err != nil {
@@ -41,6 +49,8 @@ func Create(c *gin.Context) {
 	log.Debug("3. push job to jobqueue")
 	job.Src = src
 	job.Callback = c.Param("callback")
+	job.Image = "build"
+	job.Commands = []string{"make"}
 	jobqueue.Push(job)
 
 	log.Debug("4. return job id")
