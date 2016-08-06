@@ -37,7 +37,7 @@ func spawnJob(running job) {
 	if err := w.Copy(ctx, r, "/app"); err != nil {
 		log.Fatal(err)
 	}
-	log.Debug("worker: app has been sent to worker")
+	log.Debug("jobqueue: app has been sent to worker")
 
 	// start a worker
 	if err := w.Start(ctx); err != nil {
@@ -50,11 +50,11 @@ func spawnJob(running job) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Debug("worker has been exited with ", exitCode)
+	log.Debug("jobqueue: worker has been exited with ", exitCode)
 
 	// test to get an artifact
 	if err := w.CopyFromWorker(ctx, "/app/app", "./tmp"); err != nil {
 		log.Fatal(err)
 	}
-	log.Debug("success build")
+	log.Debug("jobqueue: success build")
 }
