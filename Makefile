@@ -15,3 +15,4 @@ test: build
 init:
 	go get -u github.com/kardianos/govendor
 	govendor sync
+	govendor fetch +missing
