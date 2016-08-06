@@ -9,6 +9,7 @@ install:
   - make init
   - govendor list
   - make build
+  - go build -i test/callback_server.go
   - docker build -t build -f example/build.docker .
 
 script:
@@ -16,7 +17,7 @@ script:
   - PORT=8080 make run &
   - sleep 7
   - curl --form "file=@example/app.tar&callback=http://localhost:8888/callback" http://localhost:8080/builds
-  - PORT=8888 go run test/callback_server.go --timeout 3 || exit 1
+  - PORT=8888 ./callback_server --timeout 3 || exit 1
   - ./tmp/app
 
 cache:
