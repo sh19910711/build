@@ -9,7 +9,7 @@ run: build
 fmt:
 	go fmt `go list ./... | grep -v \/vendor\/`
 
-test:
+test: build
 	go test -v `go list ./... | grep -v \/vendor\/`
 
 init:
