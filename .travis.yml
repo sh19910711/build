@@ -13,9 +13,9 @@ install:
 
 script:
   - make test
-  - make run &
+  - PORT=8080 make run &
   - sleep 7
-  - curl --form "file=@example/app.tar" http://localhost:8080/builds
+  - curl --form "file=@example/app.tar&callback=http://localhost:8888/callback" http://localhost:8080/builds
   - PORT=8888 go run test/callback_server.go --timeout 3 || exit 1
   - ./tmp/app
 
