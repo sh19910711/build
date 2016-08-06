@@ -1,4 +1,4 @@
-.PHONY: build
+.PHONY: build run test init
 build:
 	govendor sync
 	go build -i
@@ -15,3 +15,5 @@ test:
 init:
 	go get -u github.com/kardianos/govendor
 	govendor init
+	govendor sync
+	govendor fetch +missing
