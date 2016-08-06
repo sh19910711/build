@@ -2,12 +2,24 @@ package controller_test
 
 import (
 	"encoding/json"
+	"flag"
 	"github.com/codestand/build/controller"
 	"github.com/codestand/build/controller/test/helper"
 	"github.com/codestand/build/jobqueue"
 	"net/http"
+	"os"
 	"testing"
 )
+
+func init() {
+	cwd := flag.String("cwd", "", "set cwd")
+	flag.Parse()
+	if *cwd != "" {
+		if err := os.Chdir(*cwd); err != nil {
+			println(err)
+		}
+	}
+}
 
 func TestCreate(t *testing.T) {
 	testhelper.Init()
@@ -21,7 +33,7 @@ func TestCreate(t *testing.T) {
 	params := map[string]string{
 		"callback": s.URL + "/callback",
 	}
-	req, err := testhelper.UploadRequest(s.URL+"/builds", "file", "../example/app.tar", params)
+	req, err := testhelper.UploadRequest(s.URL+"/builds", "file", "./example/app.tar", params)
 	if err != nil {
 		t.Fatal(err)
 	}
