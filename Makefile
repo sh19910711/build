@@ -1,4 +1,4 @@
-.PHONY: build
+.PHONY: build run test init
 build:
 	govendor sync
 	go build -i
@@ -10,8 +10,10 @@ fmt:
 	go fmt `go list ./... | grep -v \/vendor\/`
 
 test:
-	go test -v `go list ./... | grep -v \/vendor\/`
+	go test -v `go list ./... | grep -v \/vendor\/` -cwd=$(PWD)
 
 init:
 	go get -u github.com/kardianos/govendor
 	govendor init
+	govendor sync
+	govendor fetch +missing
