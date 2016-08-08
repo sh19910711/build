@@ -13,5 +13,5 @@ $ make run
 #### Build Request
 
 ```
-$ curl --form "f=@example/app.tar" http://localhost:8080/builds
+$ curl --form file=@example/app.tar --form callback=http://example.com/callback http://localhost:8080/builds
 ```
