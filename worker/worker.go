@@ -45,29 +45,17 @@ func (w *Worker) Create(ctx context.Context, imageName string, cmd string) (err 
 	return nil
 }
 
-func (w *Worker) Copy(ctx context.Context, tar io.Reader, dst string) error {
+func (w *Worker) CopyToWorker(ctx context.Context, tar io.Reader, dst string) error {
 	opts := types.CopyToContainerOptions{
 		AllowOverwriteDirWithFile: true,
 	}
 	return w.c.CopyToContainer(ctx, w.id, dst, tar, opts)
 }
 
-func (w *Worker) CopyFile(ctx context.Context, src string, dst string) error {
-	r, err := archive(src)
-	if err != nil {
-		return err
-	}
-	return w.Copy(ctx, r, dst)
-}
-
+// Get file from Worker (as a tar-ball archive).
 func (w *Worker) CopyFromWorker(ctx context.Context, file string) (io.Reader, error) {
-	// get file from Worker (as a tar-ball archive)
 	r, _, err := w.c.CopyFromContainer(ctx, w.id, file)
-	if err != nil {
-		return nil, err
-	}
-
-	return r, nil
+	return r, err
 }
 
 func (w *Worker) Start(ctx context.Context) error {

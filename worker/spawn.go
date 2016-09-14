@@ -21,11 +21,11 @@ func Spawn(j job.Job) error {
 		return err
 	}
 
-	if err := w.CopyFile(ctx, "./script/build.bash", "/"); err != nil {
+	if err := w.copyFileToContainer(ctx, "./script/build.bash", "/"); err != nil {
 		return err
 	}
 
-	if err := w.sendTarBall(ctx, j.Src); err != nil {
+	if err := w.copyTarBall(ctx, j.Src); err != nil {
 		return err
 	}
 
@@ -46,12 +46,20 @@ func Spawn(j job.Job) error {
 	return nil
 }
 
-func (w *Worker) sendTarBall(ctx context.Context, tarPath string) error {
+func (w *Worker) copyTarBall(ctx context.Context, tarPath string) error {
 	r, err := os.Open(tarPath)
 	if err != nil {
 		return err
 	}
-	return w.Copy(ctx, r, "/app")
+	return w.CopyToWorker(ctx, r, "/app")
+}
+
+func (w *Worker) copyFileToContainer(ctx context.Context, src string, dst string) error {
+	r, err := archive(src)
+	if err != nil {
+		return err
+	}
+	return w.CopyToWorker(ctx, r, dst)
 }
 
 func (w *Worker) fireCallback(ctx context.Context, j job.Job) error {
