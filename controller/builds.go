@@ -68,7 +68,7 @@ func respondError(c *gin.Context, err error) {
 }
 
 func newBuild() Build {
-	return Build{job: job.NewJob()}
+	return Build{job: job.New()}
 }
 
 func save(r io.Reader, path string) error {

@@ -14,6 +14,6 @@ type Job struct {
 	ExitCode  int
 }
 
-func NewJob() Job {
+func New() Job {
 	return Job{Id: uuid.NewV4().String()}
 }
