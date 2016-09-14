@@ -26,7 +26,9 @@ func Push(j Job) {
 func Wait() {
 	for {
 		if j, ok := <-queue; ok {
-			spawnJob(j) // TODO: parallelize
+			if err := j.Spawn(); err != nil { // TODO: parallelize
+				log.Fatal(err) // TODO: improve error handling
+			}
 		} else {
 			break
 		}

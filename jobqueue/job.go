@@ -11,6 +11,7 @@ type Job struct {
 	Image     string
 	Commands  []string
 	Artifacts []string
+	ExitCode  int
 }
 
 func NewJob() Job {
