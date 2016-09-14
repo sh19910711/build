@@ -1,6 +1,7 @@
 package jobqueue_test
 
 import (
+	"github.com/codestand/build/job"
 	"github.com/codestand/build/jobqueue"
 	_ "github.com/codestand/build/test/testhelper"
 	"testing"
@@ -8,9 +9,9 @@ import (
 
 func TestPush(t *testing.T) {
 	go func() {
-		jobqueue.Push(jobqueue.Job{Id: "job1"})
-		jobqueue.Push(jobqueue.Job{Id: "job2"})
-		jobqueue.Push(jobqueue.Job{Id: "job3"})
+		jobqueue.Push(job.Job{Id: "job1"})
+		jobqueue.Push(job.Job{Id: "job2"})
+		jobqueue.Push(job.Job{Id: "job3"})
 	}()
 
 	q := jobqueue.Queue()

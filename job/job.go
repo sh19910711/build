@@ -1,4 +1,4 @@
-package jobqueue
+package job
 
 import (
 	uuid "github.com/satori/go.uuid"

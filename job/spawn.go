@@ -1,4 +1,4 @@
-package jobqueue
+package job
 
 import (
 	log "github.com/Sirupsen/logrus"

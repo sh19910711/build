@@ -2,15 +2,16 @@ package jobqueue
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/codestand/build/job"
 )
 
-var queue chan Job
+var queue chan job.Job
 
 func init() {
-	queue = make(chan Job, 1)
+	queue = make(chan job.Job, 1)
 }
 
-func Queue() chan Job {
+func Queue() chan job.Job {
 	return queue
 }
 
@@ -18,7 +19,7 @@ func Close() {
 	close(queue)
 }
 
-func Push(j Job) {
+func Push(j job.Job) {
 	queue <- j
 	log.Debug("Push: ", j)
 }

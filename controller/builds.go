@@ -2,6 +2,7 @@ package controller
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/codestand/build/job"
 	"github.com/codestand/build/jobqueue"
 	"github.com/gin-gonic/gin"
 	"io"
@@ -11,7 +12,7 @@ import (
 )
 
 type Build struct {
-	job jobqueue.Job
+	job job.Job
 }
 
 func (b *Build) saveSource(c *gin.Context, prefix string) error {
@@ -67,7 +68,7 @@ func respondError(c *gin.Context, err error) {
 }
 
 func newBuild() Build {
-	return Build{job: jobqueue.NewJob()}
+	return Build{job: job.NewJob()}
 }
 
 func save(r io.Reader, path string) error {
