@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func Init() {
+func init() {
 	cwd := flag.String("cwd", "", "set cwd")
 	flag.Parse()
 	if *cwd != "" {
