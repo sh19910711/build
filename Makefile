@@ -10,7 +10,10 @@ fmt:
 	go fmt `go list ./... | grep -v \/vendor\/`
 
 test:
-	go test -v `go list ./... | grep -v \/vendor\/` -cwd=$(PWD)
+	go test -v `go list ./... | grep -v \/vendor\/`
+
+test_all:
+	go test -tags=docker -v `go list ./... | grep -v \/vendor\/` -cwd=$(PWD)
 
 init:
 	go get -u github.com/kardianos/govendor
