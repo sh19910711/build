@@ -1,8 +1,6 @@
 package worker
 
 import (
-	"archive/tar"
-	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
@@ -60,35 +58,6 @@ func (w *Worker) CopyFile(ctx context.Context, src string, dst string) error {
 		return err
 	}
 	return w.Copy(ctx, r, dst)
-}
-
-func untar(r io.Reader, dstPrefix string) error {
-	// extract artifacts from archive
-	tr := tar.NewReader(r)
-
-	// iterate through the files
-	for {
-		header, err := tr.Next()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-
-		// write
-		log.Debug("artifacts: ", header.Name)
-		f, err := os.OpenFile(dstPrefix+"/"+header.Name, os.O_WRONLY|os.O_CREATE, os.FileMode(header.Mode))
-		defer f.Close()
-		if err != nil {
-			return err
-		}
-		if _, err := io.Copy(f, tr); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (w *Worker) CopyFromWorker(ctx context.Context, file string) (io.Reader, error) {
