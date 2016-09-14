@@ -1,18 +1,18 @@
-package job
+package worker
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/codestand/build/job"
 	"github.com/codestand/build/util"
-	"github.com/codestand/build/worker"
 	"golang.org/x/net/context"
 	"os"
 )
 
-func (j *Job) Spawn() error {
-	log.Debug("jobqueue: spawn: ", j)
+func Spawn(j job.Job) error {
+	log.Debug("worker: spawn job: ", j)
 	ctx := context.TODO() // with timeout?
 
-	w, err := newBuildWorker()
+	w, err := New()
 	if err != nil {
 		return err
 	}
@@ -46,19 +46,7 @@ func (j *Job) Spawn() error {
 	return nil
 }
 
-type buildWorker struct {
-	*worker.Worker
-}
-
-func newBuildWorker() (buildWorker, error) {
-	if w, err := worker.New(); err != nil {
-		return buildWorker{}, err
-	} else {
-		return buildWorker{&w}, nil
-	}
-}
-
-func (w *buildWorker) sendTarBall(ctx context.Context, tarPath string) error {
+func (w *Worker) sendTarBall(ctx context.Context, tarPath string) error {
 	r, err := os.Open(tarPath)
 	if err != nil {
 		return err
@@ -66,7 +54,7 @@ func (w *buildWorker) sendTarBall(ctx context.Context, tarPath string) error {
 	return w.Copy(ctx, r, "/app")
 }
 
-func (w *buildWorker) fireCallback(ctx context.Context, j *Job) error {
+func (w *Worker) fireCallback(ctx context.Context, j job.Job) error {
 	if j.Callback != "" {
 		artifacts, err := w.CopyFromWorker(ctx, "/app/app")
 		if err != nil {
