@@ -1,7 +1,6 @@
 package worker
 
 import (
-	log "github.com/Sirupsen/logrus"
 	"github.com/codestand/build/job"
 	"github.com/codestand/build/util"
 	"golang.org/x/net/context"
@@ -9,7 +8,6 @@ import (
 )
 
 func Spawn(j job.Job) error {
-	log.Debug("worker: spawn job: ", j)
 	ctx := context.TODO() // with timeout?
 
 	w, err := New()
@@ -20,6 +18,9 @@ func Spawn(j job.Job) error {
 	if err := w.Create(ctx, "build", "bash /build.bash"); err != nil {
 		return err
 	}
+
+	j.WorkerId = w.Id
+	job.Save(j)
 
 	if err := w.copyFileToContainer(ctx, "./script/build.bash", "/"); err != nil {
 		return err

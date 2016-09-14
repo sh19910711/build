@@ -9,8 +9,9 @@ import (
 
 func main() {
 	go jobqueue.Wait()
+	defer jobqueue.Close()
 
 	r := gin.Default()
-	r.POST("/builds", controller.Create)
+	controller.MountBuilds(r)
 	r.Run()
 }

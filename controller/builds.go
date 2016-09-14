@@ -4,41 +4,31 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/codestand/build/job"
 	"github.com/codestand/build/jobqueue"
+	"github.com/codestand/build/model"
+	"github.com/codestand/build/worker"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 )
 
-type Build struct {
-	job job.Job
+func MountBuilds(r *gin.Engine) {
+	r.GET("/builds/:id", Show)
+	r.POST("/builds", Create)
 }
 
-func (b *Build) saveSource(c *gin.Context, prefix string) error {
-	if err := os.MkdirAll(prefix, 0700); err != nil {
-		return err
-	}
-
-	r, err := formFileReader(c)
-	if err != nil {
-		return err
-	}
-	src := filepath.Join(prefix, b.job.Id)
-	if err := save(r, src); err != nil {
-		return err
+// GET /builds/<build-id>
+func Show(c *gin.Context) {
+	id := c.Param("id")
+	if j, err := job.Find(id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": err})
 	} else {
-		b.job.Src = src
+		finished, err := worker.IsFinished(j.WorkerId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": err})
+		} else {
+			c.JSON(http.StatusOK, gin.H{"id": id, "finished": finished, "exitCode": j.ExitCode})
+		}
 	}
-
-	return nil
-}
-
-func (b *Build) setup(c *gin.Context) {
-	b.job.Callback = c.PostForm("callback")
-	b.job.Image = "build"
-	b.job.Commands = []string{"make"}
-	b.job.Artifacts = []string{"/app/app"}
 }
 
 // POST /builds
@@ -46,40 +36,35 @@ func (b *Build) setup(c *gin.Context) {
 // - params[callback] := URL fired after completed build (required)
 // - returns {"id": "<job-id>"}
 func Create(c *gin.Context) {
-	b := newBuild()
+	b := model.NewBuild()
 
 	log.Debug("Create: save source to tmp")
-	if err := b.saveSource(c, "./tmp"); err != nil {
+	r, _, err := c.Request.FormFile("file")
+	if err != nil {
+		respondError(c, err)
+		return
+	}
+	if err := b.Save(r, "./tmp"); err != nil {
 		respondError(c, err)
 		return
 	}
 
-	b.setup(c)
+	// TODO: improve here
+	b.Job.Callback = c.PostForm("callback")
+	b.Job.Image = "build"
+	b.Job.Commands = []string{"make"}
+	b.Job.Artifacts = []string{"/app/app"}
 
 	log.Debug("Create: push build job")
-	go jobqueue.Push(b.job)
+	go jobqueue.Push(b.Job)
 
 	log.Debug("Create: success")
-	c.JSON(http.StatusOK, gin.H{"id": b.job.Id})
+	job.Save(b.Job)
+	c.JSON(http.StatusOK, gin.H{"id": b.Job.Id})
 }
 
 func respondError(c *gin.Context, err error) {
 	c.JSON(http.StatusInternalServerError, gin.H{"msg": err})
-}
-
-func newBuild() Build {
-	return Build{job: job.New()}
-}
-
-func save(r io.Reader, path string) error {
-	w, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		return err
-	}
-	if _, err := io.Copy(w, r); err != nil {
-		return err
-	}
-	return nil
 }
 
 func formFileReader(c *gin.Context) (io.Reader, error) {
