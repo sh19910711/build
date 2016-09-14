@@ -4,7 +4,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-type job struct {
+type Job struct {
 	Id        string
 	Src       string
 	Callback  string
@@ -13,7 +13,6 @@ type job struct {
 	Artifacts []string
 }
 
-func NewJob() job {
-	u := uuid.NewV4()
-	return job{Id: u.String()}
+func NewJob() Job {
+	return Job{Id: uuid.NewV4().String()}
 }

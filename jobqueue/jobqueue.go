@@ -4,25 +4,23 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-var queue chan job
+var queue chan Job
 
-func Queue() chan job {
-	return queue
+func init() {
+	queue = make(chan Job, 1)
 }
 
-func Init() {
-	queue = make(chan job, 1)
+func Queue() chan Job {
+	return queue
 }
 
 func Close() {
 	close(queue)
 }
 
-func Push(newjob job) {
-	go func() {
-		queue <- newjob
-		log.Debug("jobqueue: pushed: ", newjob)
-	}()
+func Push(j Job) {
+	queue <- j
+	log.Debug("Push: ", j)
 }
 
 func Wait() {

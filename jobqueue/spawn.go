@@ -8,8 +8,8 @@ import (
 	"os"
 )
 
-func spawnJob(running job) {
-	log.Debug("jobqueue: running: ", running)
+func spawnJob(j Job) {
+	log.Debug("jobqueue: running: ", j)
 	ctx := context.Background()
 
 	// new worker
@@ -32,7 +32,7 @@ func spawnJob(running job) {
 	log.Debug("jobqueue: script has been sent to worker")
 
 	// send app
-	r, err := os.Open(running.Src)
+	r, err := os.Open(j.Src)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -55,14 +55,14 @@ func spawnJob(running job) {
 	log.Debug("jobqueue: worker has been exited with ", exitCode)
 
 	// send artifact to callback url
-	if running.Callback != "" {
+	if j.Callback != "" {
 		artifacts, err := w.CopyFromWorker(ctx, "/app/app")
 		if err != nil {
 			log.Fatal(err)
 		}
 		log.Debug("jobqueue: artifacts is found")
 
-		if _, err := util.Upload(artifacts, running.Callback, "file", "artifacts.tar"); err != nil {
+		if _, err := util.Upload(artifacts, j.Callback, "file", "artifacts.tar"); err != nil {
 			log.Fatal(err)
 		} else {
 			log.Debug("jobqueue: fired callback")
