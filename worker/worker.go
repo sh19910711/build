@@ -13,7 +13,9 @@ import (
 const DOCKER_ENDPOINT = "unix:///var/run/docker.sock"
 const DOCKER_API_VERSION = "v1.18"
 
-func New() (w Worker, err error) {
+var dockerClient *client.Client
+
+func init() {
 	headers := map[string]string{
 		"User-Agent": "engine-api",
 	}
@@ -21,8 +23,11 @@ func New() (w Worker, err error) {
 	if endpoint == "" {
 		endpoint = DOCKER_ENDPOINT
 	}
-	w.c, err = client.NewClient(endpoint, DOCKER_API_VERSION, nil, headers)
-	return w, err
+	if cli, err := client.NewClient(endpoint, DOCKER_API_VERSION, nil, headers); err != nil {
+		panic(err)
+	} else {
+		dockerClient = cli
+	}
 }
 
 type Worker struct {
@@ -30,12 +35,15 @@ type Worker struct {
 	c  *client.Client // docker engine client
 }
 
+func New() (w Worker) {
+	return Worker{c: dockerClient}
+}
+
 func (w *Worker) Create(ctx context.Context, imageName string, cmd string) (err error) {
 	config := container.Config{
 		Image: imageName,
 		Cmd:   strings.Split(cmd, " "),
 	}
-
 	c, err := w.c.ContainerCreate(ctx, &config, nil, nil, "")
 	if err != nil {
 		return err
@@ -70,15 +78,8 @@ func (w *Worker) Destroy(ctx context.Context) error {
 	return w.c.ContainerRemove(ctx, w.Id, types.ContainerRemoveOptions{})
 }
 
-func IsFinished(containerId string) (bool, error) {
-	if containerId == "" {
-		return false, nil
-	}
-	w, err := New()
-	if err != nil {
-		return false, err
-	}
-	c, err := w.c.ContainerInspect(context.Background(), containerId)
+func (w *Worker) IsFinished(ctx context.Context) (bool, error) {
+	c, err := w.c.ContainerInspect(ctx, w.Id)
 	if err != nil {
 		return false, err
 	}
