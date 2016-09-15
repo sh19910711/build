@@ -1,9 +1,6 @@
 package builds
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"github.com/codestand/build/job"
-	"github.com/codestand/build/jobqueue"
 	"github.com/codestand/build/model"
 	"github.com/gin-gonic/gin"
 	"io"
@@ -17,28 +14,21 @@ import (
 func Create(c *gin.Context) {
 	b := model.NewBuild()
 
-	log.Debug("Create: save source to tmp")
 	r, _, err := c.Request.FormFile("file")
 	if err != nil {
 		respondError(c, err)
 		return
 	}
-	if err := b.Save(r, "./tmp"); err != nil {
+	if err := b.SaveSourceCode(r, "./tmp"); err != nil {
 		respondError(c, err)
 		return
 	}
 
-	// TODO: improve here
-	b.Job.Callback = c.PostForm("callback")
-	b.Job.Image = "build"
-	b.Job.Commands = []string{"make"}
-	b.Job.Artifacts = []string{"/app/app"}
+	b.SetCallbackURL(c.PostForm("callback"))
+	b.SetWorker()
+	b.SaveJob()
+	go b.PushJobQueue()
 
-	log.Debug("Create: push build job")
-	go jobqueue.Push(b.Job)
-
-	log.Debug("Create: success")
-	job.Save(b.Job)
 	c.JSON(http.StatusOK, gin.H{"id": b.Job.Id})
 }
 
