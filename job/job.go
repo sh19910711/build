@@ -14,13 +14,14 @@ type Job struct {
 	Artifacts []string
 	WorkerId  string
 	ExitCode  int
+	Finished  bool
 }
 
 func New() Job {
 	return Job{Id: uuid.NewV4().String()}
 }
 
-var jobs map[string]Job
+var jobs map[string]Job // TODO: let's use database
 
 func init() {
 	jobs = map[string]Job{}
