@@ -26,8 +26,9 @@ func init() {
 	jobs = map[string]Job{}
 }
 
-func Save(j Job) {
+func Save(j Job) error {
 	jobs[j.Id] = j
+	return nil
 }
 
 func Find(id string) (Job, error) {
