@@ -1,15 +1,13 @@
+// +build docker
+
 package worker_test
 
 import (
-	"github.com/codestand/build/test/testhelper"
+	_ "github.com/codestand/build/test/testhelper"
 	"github.com/codestand/build/worker"
 	"golang.org/x/net/context"
 	"testing"
 )
-
-func init() {
-	testhelper.Init()
-}
 
 func TestCreate(t *testing.T) {
 	ctx := context.Background()

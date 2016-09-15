@@ -1,11 +1,9 @@
-FROM ubuntu:16.04
+FROM alpine:3.4
 
-RUN apt-get update
-RUN apt-get install -y gcc
-RUN apt-get install -y make
+RUN apk update && apk add -U bash make gcc musl-dev
 
 RUN mkdir -p /app
-RUN useradd -m user
+RUN adduser -S user
 RUN chown -R user. /app
 WORKDIR /app
 USER user

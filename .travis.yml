@@ -13,8 +13,7 @@ install:
   - docker build -t build -f example/build.docker .
 
 script:
-  # unit tests
-  - make test
+  - make test_all
 
   # e2e test
   - PORT=8080 make run &

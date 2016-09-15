@@ -8,7 +8,7 @@ import (
 
 const DEBUG = true
 
-func Init() {
+func init() {
 	log.SetLevel(log.DebugLevel)
 	log.Info("*** Debug mode is enabled ***")
 }

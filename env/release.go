@@ -4,6 +4,6 @@ package env
 
 const DEBUG = false
 
-func Init() {
+func init() {
 	gin.SetMode(gin.ReleaseMode)
 }

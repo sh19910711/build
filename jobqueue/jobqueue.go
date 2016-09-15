@@ -2,33 +2,43 @@ package jobqueue
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/codestand/build/model/job"
 )
 
-var queue chan job
+var queue chan job.Job
 
-func Queue() chan job {
-	return queue
+func init() {
+	queue = make(chan job.Job, 1)
 }
 
-func Init() {
-	queue = make(chan job, 1)
+func Queue() chan job.Job {
+	return queue
 }
 
 func Close() {
 	close(queue)
 }
 
-func Push(newjob job) {
-	go func() {
-		queue <- newjob
-		log.Debug("jobqueue: pushed: ", newjob)
-	}()
+func Push(j job.Job) {
+	queue <- j
+	log.Debug("Push: ", j)
 }
 
 func Wait() {
 	for {
 		if j, ok := <-queue; ok {
-			spawnJob(j) // TODO: parallelize
+			if w, err := CreateWorker(j.Src); err != nil {
+				log.Warn(err)
+			} else {
+				if exitCode, err := RunWorker(w, j.Callback); err != nil {
+					log.Warn(err)
+					j.ExitCode = -1
+				} else {
+					j.ExitCode = exitCode
+				}
+				j.Finished = true
+				job.Save(j)
+			}
 		} else {
 			break
 		}
