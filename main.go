@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/codestand/build/controller"
+	"github.com/codestand/build/controller/builds"
 	_ "github.com/codestand/build/env"
 	"github.com/codestand/build/jobqueue"
 	"github.com/gin-gonic/gin"
@@ -12,6 +12,6 @@ func main() {
 	defer jobqueue.Close()
 
 	r := gin.Default()
-	controller.MountBuilds(r)
+	builds.Mount(r)
 	r.Run()
 }

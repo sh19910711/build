@@ -1,11 +1,11 @@
 // +build docker
 
-package controller_test
+package builds_test
 
 import (
 	"encoding/json"
 	"errors"
-	"github.com/codestand/build/controller"
+	"github.com/codestand/build/controller/builds"
 	"github.com/codestand/build/jobqueue"
 	"github.com/codestand/build/test/testhelper"
 	"github.com/gin-gonic/gin"
@@ -20,7 +20,7 @@ func TestCreate(t *testing.T) {
 	// set up fake server
 	//
 	r := gin.Default()
-	controller.MountBuilds(r)
+	builds.Mount(r)
 
 	// test artifacts send to callback URL
 	r.POST("/callback", func(c *gin.Context) {

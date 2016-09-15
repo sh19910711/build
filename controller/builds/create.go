@@ -1,35 +1,14 @@
-package controller
+package builds
 
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/codestand/build/job"
 	"github.com/codestand/build/jobqueue"
 	"github.com/codestand/build/model"
-	"github.com/codestand/build/worker"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 )
-
-func MountBuilds(r *gin.Engine) {
-	r.GET("/builds/:id", Show)
-	r.POST("/builds", Create)
-}
-
-// GET /builds/<build-id>
-func Show(c *gin.Context) {
-	id := c.Param("id")
-	if j, err := job.Find(id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"msg": err})
-	} else {
-		finished, err := worker.IsFinished(j.WorkerId)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"msg": err})
-		} else {
-			c.JSON(http.StatusOK, gin.H{"id": id, "finished": finished, "exitCode": j.ExitCode})
-		}
-	}
-}
 
 // POST /builds
 // - params[file] := tar-ball (required)
