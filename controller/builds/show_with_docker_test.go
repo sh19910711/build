@@ -4,8 +4,8 @@ package builds_test
 
 import (
 	"github.com/codestand/build/controller/builds"
-	"github.com/codestand/build/job"
 	"github.com/codestand/build/model/build"
+	"github.com/codestand/build/model/job"
 	"github.com/codestand/build/test/testhelper/controller_helper"
 	"github.com/gin-gonic/gin"
 	"net/http/httptest"

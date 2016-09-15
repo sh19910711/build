@@ -1,7 +1,7 @@
 package job_test
 
 import (
-	"github.com/codestand/build/job"
+	"github.com/codestand/build/model/job"
 	_ "github.com/codestand/build/test/testhelper"
 	"regexp"
 	"testing"

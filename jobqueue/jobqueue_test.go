@@ -1,8 +1,8 @@
 package jobqueue_test
 
 import (
-	"github.com/codestand/build/job"
 	"github.com/codestand/build/jobqueue"
+	"github.com/codestand/build/model/job"
 	_ "github.com/codestand/build/test/testhelper"
 	"testing"
 )

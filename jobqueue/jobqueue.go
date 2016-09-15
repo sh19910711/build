@@ -2,7 +2,7 @@ package jobqueue
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/codestand/build/job"
+	"github.com/codestand/build/model/job"
 )
 
 var queue chan job.Job

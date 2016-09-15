@@ -2,8 +2,8 @@ package build
 
 import (
 	"errors"
-	"github.com/codestand/build/job"
 	"github.com/codestand/build/jobqueue"
+	"github.com/codestand/build/model/job"
 	uuid "github.com/satori/go.uuid"
 	"io"
 	"os"
@@ -11,9 +11,9 @@ import (
 )
 
 type Build struct {
-	Id    string
-	Job   job.Job // TODO: has many
-	JobId string
+	Id    string  `json:"id"`
+	Job   job.Job `json:"job"` // TODO: has many
+	JobId string  `json:"-"`
 }
 
 var builds map[string]Build
