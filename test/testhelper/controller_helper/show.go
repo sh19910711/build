@@ -13,7 +13,7 @@ type ShowResponse struct {
 }
 
 type ShowJobResponse struct {
-	ExitCode int `json:exitcode`
+	ExitCode int `json:exit_code`
 	Finished bool
 }
 

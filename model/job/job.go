@@ -6,15 +6,15 @@ import (
 )
 
 type Job struct {
-	Id        string
-	Src       string
-	Callback  string
-	Image     string
-	Commands  []string
-	Artifacts []string
-	WorkerId  string
-	ExitCode  int
-	Finished  bool
+	Id        string   `json:"id"`
+	Src       string   `json:"src"`
+	Callback  string   `json:"callback"`
+	Image     string   `json:"image"`
+	Commands  []string `json:"commands"`
+	Artifacts []string `json:"artifacts"`
+	WorkerId  string   `json:"worker_id"`
+	ExitCode  int      `json:"exit_code"`
+	Finished  bool     `json:"finished"`
 }
 
 func New() Job {
