@@ -3,7 +3,6 @@ package jobqueue
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/codestand/build/job"
-	"github.com/codestand/build/worker"
 )
 
 var queue chan job.Job
@@ -28,8 +27,17 @@ func Push(j job.Job) {
 func Wait() {
 	for {
 		if j, ok := <-queue; ok {
-			if err := worker.Spawn(j); err != nil { // TODO: parallelize
-				log.Fatal(err) // TODO: improve error handling
+			if w, err := CreateWorker(j.Src); err != nil {
+				log.Warn(err)
+			} else {
+				if exitCode, err := RunWorker(w, j.Callback); err != nil {
+					log.Warn(err)
+					j.ExitCode = -1
+				} else {
+					j.ExitCode = exitCode
+				}
+				j.Finished = true
+				job.Save(j)
 			}
 		} else {
 			break
