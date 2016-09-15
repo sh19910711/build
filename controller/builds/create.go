@@ -1,9 +1,8 @@
 package builds
 
 import (
-	"github.com/codestand/build/model"
+	"github.com/codestand/build/model/build"
 	"github.com/gin-gonic/gin"
-	"io"
 	"net/http"
 )
 
@@ -12,7 +11,7 @@ import (
 // - params[callback] := URL fired after completed build (required)
 // - returns {"id": "<job-id>"}
 func Create(c *gin.Context) {
-	b := model.NewBuild()
+	b := build.New()
 
 	r, _, err := c.Request.FormFile("file")
 	if err != nil {
@@ -26,12 +25,8 @@ func Create(c *gin.Context) {
 
 	b.SetCallbackURL(c.PostForm("callback"))
 	b.SetWorker()
-	b.SaveJob()
+	build.Save(b)
 	go b.PushJobQueue()
 
-	c.JSON(http.StatusOK, gin.H{"id": b.Job.Id})
-}
-
-func respondError(c *gin.Context, err error) {
-	c.JSON(http.StatusInternalServerError, gin.H{"msg": err})
+	c.JSON(http.StatusOK, b)
 }

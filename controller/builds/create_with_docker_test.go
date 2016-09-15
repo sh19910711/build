@@ -1,24 +1,21 @@
-// +build docker
+// +build integration
 
 package builds_test
 
 import (
-	"encoding/json"
-	"errors"
 	"github.com/codestand/build/controller/builds"
 	"github.com/codestand/build/jobqueue"
 	"github.com/codestand/build/test/testhelper"
+	"github.com/codestand/build/test/testhelper/controller_helper"
 	"github.com/gin-gonic/gin"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 )
 
+// The Create should create new build and callback after finished build
 func TestCreate(t *testing.T) {
-	//
-	// set up fake server
-	//
+	// set up fake web server
 	r := gin.Default()
 	builds.Mount(r)
 
@@ -37,6 +34,7 @@ func TestCreate(t *testing.T) {
 		}
 	})
 
+	// run web server
 	s := httptest.NewServer(r)
 	defer s.Close()
 
@@ -44,24 +42,8 @@ func TestCreate(t *testing.T) {
 	go jobqueue.Wait()
 	defer jobqueue.Close()
 
-	// prepare request
-	params := map[string]string{
-		"callback": s.URL + "/callback",
-	}
-	req, err := testhelper.UploadRequest(s.URL+"/builds", "file", "./example/app.tar", params)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// send request
-	c := &http.Client{}
-	res, err := c.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	// check response
-	buildId, err := checkCreateResponse(res)
+	build, err := controller_helper.Create(s.URL, "./example/app.tar", s.URL+"/callback")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,11 +52,11 @@ func TestCreate(t *testing.T) {
 	exitCode := make(chan int, 1)
 	go func() {
 		for {
-			if res, err := getBuild(s.URL, buildId); err != nil {
+			if res, err := controller_helper.Show(s.URL, build.Id); err != nil {
 				t.Fatal(err)
 			} else {
-				if res.Finished {
-					exitCode <- res.ExitCode
+				if res.Job.Finished {
+					exitCode <- res.Job.ExitCode
 					break
 				}
 			}
@@ -86,61 +68,9 @@ func TestCreate(t *testing.T) {
 	select {
 	case c := <-exitCode:
 		if c != 0 {
-			t.Fatal(res)
+			t.Fatal(c)
 		}
 	case <-time.After(3 * time.Second):
-		t.Fatal(errors.New("build timed out"))
+		t.Fatal("the build should be finished in a few second")
 	}
-}
-
-type BuildResponse struct {
-	Id       string
-	ExitCode int
-	Finished bool
-}
-
-func getBuild(url, id string) (b BuildResponse, err error) {
-	req, err := testhelper.Get(url+"/builds/"+id, map[string]string{})
-	if err != nil {
-		return b, err
-	}
-
-	c := &http.Client{}
-	res, err := c.Do(req)
-	if err != nil {
-		return b, err
-	}
-
-	defer res.Body.Close()
-	if res.StatusCode != 200 {
-		return b, errors.New(res.Status)
-	}
-
-	dec := json.NewDecoder(res.Body)
-	if err := dec.Decode(&b); err != nil {
-		return b, err
-	}
-	return b, nil
-}
-
-type CreatedBuildResponse struct {
-	Id string
-}
-
-func checkCreateResponse(res *http.Response) (string, error) {
-	defer res.Body.Close()
-	if res.StatusCode != 200 {
-		return "", errors.New(res.Status)
-	}
-
-	dec := json.NewDecoder(res.Body)
-	var b CreatedBuildResponse
-	if err := dec.Decode(&b); err != nil {
-		return "", err
-	}
-	if b.Id == "" {
-		return "", errors.New("id should not be empty")
-	}
-
-	return b.Id, nil
 }
