@@ -35,11 +35,3 @@ func Create(c *gin.Context) {
 func respondError(c *gin.Context, err error) {
 	c.JSON(http.StatusInternalServerError, gin.H{"msg": err})
 }
-
-func formFileReader(c *gin.Context) (io.Reader, error) {
-	if r, _, err := c.Request.FormFile("file"); err != nil {
-		return nil, err
-	} else {
-		return r, nil
-	}
-}
