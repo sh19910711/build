@@ -4,6 +4,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/codestand/build/jobmanager"
 	"github.com/codestand/build/model/job"
+	"golang.org/x/net/context"
+	"time"
 )
 
 var queue chan job.Job
@@ -28,22 +30,36 @@ func Push(j job.Job) {
 func Wait() {
 	for {
 		if j, ok := <-queue; ok {
-			m := jobmanager.New(j)
-
-			if err := m.Create(j.Src); err != nil {
+			if err := spawn(j); err != nil { // TODO: async build
 				log.Warn(err)
-			} else {
-				if exitCode, err := m.Run(j.Callback); err != nil {
-					log.Warn(err)
-					j.ExitCode = -1
-				} else {
-					j.ExitCode = exitCode
-				}
-				j.Finished = true
-				job.Save(j)
 			}
 		} else {
 			break
 		}
 	}
+}
+
+func spawn(j job.Job) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+	m := jobmanager.New(ctx, j)
+
+	if err := m.Create(j.Src); err != nil {
+		return err
+	}
+
+	if err := m.Attach(); err != nil {
+		log.Warn(err)
+	}
+
+	if exitCode, err := m.Run(j.Callback); err != nil {
+		log.Warn(err)
+		j.ExitCode = -1
+	} else {
+		j.ExitCode = exitCode
+	}
+	j.Finished = true
+	job.Save(j)
+
+	return nil
 }

@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func (m *JobManager) Create(src string) (err error) {
+func (m *JobManager) Create(src string) error {
 	m.w = worker.New()
 
 	if err := m.buildWithDockerfileIfExists(src); err != nil {

@@ -12,9 +12,9 @@ type JobManager struct {
 	j   job.Job
 }
 
-func New(j job.Job) JobManager {
+func New(ctx context.Context, j job.Job) JobManager {
 	return JobManager{
-		ctx: context.TODO(),
+		ctx: ctx,
 		j:   j,
 	}
 }

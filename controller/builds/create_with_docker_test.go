@@ -42,7 +42,7 @@ func TestCreate(t *testing.T) {
 	go jobqueue.Wait()
 	defer jobqueue.Close()
 
-	// check response
+	// send request
 	build, err := controller_helper.Create(s.URL, "./example/app.tar", s.URL+"/callback")
 	if err != nil {
 		t.Fatal(err)

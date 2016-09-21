@@ -65,6 +65,7 @@ func (b *Build) SetWorker() { // TODO: use config
 	b.Job.Image = "build"
 	b.Job.Commands = []string{"make"}
 	b.Job.Artifacts = []string{"/app/app"}
+	b.Job.LogPath = filepath.Join("tmp", b.Id, "logs", b.Job.Id+".txt")
 }
 
 func (b *Build) PushJobQueue() {
