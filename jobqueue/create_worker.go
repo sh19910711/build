@@ -1,6 +1,7 @@
 package jobqueue
 
 import (
+	"github.com/codestand/build/util"
 	"github.com/codestand/build/worker"
 	"golang.org/x/net/context"
 	"os"
@@ -33,7 +34,7 @@ func copyAppCodeToWorker(w worker.Worker, tarPath string) error {
 }
 
 func copyFileToContainer(w worker.Worker, src string, dst string) error {
-	r, err := archive(src)
+	r, err := util.ArchiveFile(src)
 	if err != nil {
 		return err
 	}
