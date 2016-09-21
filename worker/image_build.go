@@ -56,17 +56,12 @@ func (w *Worker) ImageBuild(ctx context.Context, imageTag string, dockerfile io.
 
 			// TODO: improve log handling
 			if r.ErrorDetail != nil {
-				fmt.Println(r.ErrorDetail.Error)
-				fmt.Println(r.ErrorDetail.Message)
 				return errors.New(r.ErrorDetail.Message)
 			} else {
 				// save image
 				var imageId string
-				fmt.Println(r.Stream)
 				if strings.HasPrefix(r.Stream, "Successfully built") {
 					fmt.Sscanf(r.Stream, "Successfully built %s", &imageId)
-					fmt.Println("imageId: ", imageId)
-					fmt.Println("imageTag: ", imageTag)
 					if err := w.c.ImageTag(ctx, imageId, imageTag); err != nil {
 						return err
 					}
