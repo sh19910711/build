@@ -27,6 +27,14 @@ func New() Build {
 	return Build{Id: uuid.NewV4().String(), Job: j, JobId: j.Id}
 }
 
+func All() ([]Build, error) {
+	all := make([]Build, 0, len(builds))
+	for _, b := range builds {
+		all = append(all, b)
+	}
+	return all, nil
+}
+
 func Find(id string) (b Build, err error) {
 	if b, ok := builds[id]; ok {
 		if b.JobId != "" {
