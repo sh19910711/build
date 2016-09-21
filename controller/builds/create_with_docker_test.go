@@ -8,7 +8,10 @@ import (
 	"github.com/codestand/build/test/testhelper"
 	"github.com/codestand/build/test/testhelper/controller_helper"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
+	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 )
@@ -42,7 +45,7 @@ func TestCreate(t *testing.T) {
 	go jobqueue.Wait()
 	defer jobqueue.Close()
 
-	// check response
+	// send request
 	build, err := controller_helper.Create(s.URL, "./example/app.tar", s.URL+"/callback")
 	if err != nil {
 		t.Fatal(err)
@@ -72,5 +75,22 @@ func TestCreate(t *testing.T) {
 		}
 	case <-time.After(3 * time.Second):
 		t.Fatal("the build should be finished in a few second")
+	}
+
+	req, err := testhelper.Get(s.URL+"/builds/"+build.Id+"/log.txt", map[string]string{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := http.Client{}
+	res, err := c.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+
+	if b, err := ioutil.ReadAll(res.Body); err != nil {
+		t.Fatal(err)
+	} else if !strings.Contains(string(b), "make") {
+		t.Fatal("example build shuold start with make command")
 	}
 }
