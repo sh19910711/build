@@ -1,4 +1,4 @@
-package worker
+package util
 
 import (
 	"archive/tar"
@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-func untar(r io.Reader, dstPrefix string) error {
+func Untar(r io.Reader, dstPrefix string) error {
 	// extract artifacts from archive
 	tr := tar.NewReader(r)
 
