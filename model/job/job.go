@@ -15,6 +15,7 @@ type Job struct {
 	WorkerId  string   `json:"worker_id"`
 	ExitCode  int      `json:"exit_code"`
 	Finished  bool     `json:"finished"`
+	LogPath   string   `json:"-"`
 }
 
 func New() Job {
