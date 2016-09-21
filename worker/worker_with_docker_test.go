@@ -24,13 +24,23 @@ func TestImageBuild(t *testing.T) {
 	defer cancel()
 	w := worker.New()
 
-	t.Run("hello world", func(t *testing.T) {
+	t.Run("hello", func(t *testing.T) {
 		buf := bytes.NewBufferString(`
 FROM alpine:3.4
 RUN echo hello
 `)
-		if err := w.ImageBuild(ctx, "hello", buf); err != nil {
+		if err := w.ImageBuild(ctx, "cs-build/test/hello", buf); err != nil {
 			t.Fatal(err)
+		}
+	})
+
+	t.Run("fail on run command", func(t *testing.T) {
+		buf := bytes.NewBufferString(`
+FROM alpine:3.4
+RUN false
+`)
+		if err := w.ImageBuild(ctx, "cs-build/test/fail", buf); err == nil {
+			t.Fatal("build should be failed")
 		}
 	})
 }

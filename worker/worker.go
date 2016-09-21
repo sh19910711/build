@@ -3,6 +3,7 @@ package worker
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/codestand/build/util"
 	"github.com/docker/docker/api/types"
@@ -82,11 +83,17 @@ func (w *Worker) Destroy(ctx context.Context) error {
 	return w.c.ContainerRemove(ctx, w.Id, types.ContainerRemoveOptions{})
 }
 
-type ImageBuildResponse struct {
-	Stream string `json:"stream,omitempty"`
+type ImageBuildError struct {
+	Message string `json:"message,omitempty"`
+	Error   string `json:"error,omitempty"`
 }
 
-func (w *Worker) ImageBuild(ctx context.Context, imageName string, dockerfile *bytes.Buffer) error {
+type ImageBuildResponse struct {
+	Stream      string           `json:"stream,omitempty"`
+	ErrorDetail *ImageBuildError `json:"errorDetail,omitempty"`
+}
+
+func (w *Worker) ImageBuild(ctx context.Context, imageTag string, dockerfile *bytes.Buffer) error {
 	// buildOptions can limit compute resources for builds
 	options := types.ImageBuildOptions{}
 
@@ -112,10 +119,29 @@ func (w *Worker) ImageBuild(ctx context.Context, imageName string, dockerfile *b
 				}
 				return err
 			}
-			fmt.Print(r.Stream)
+
+			// TODO: improve log handling
+			if r.ErrorDetail != nil {
+				fmt.Println(r.ErrorDetail.Error)
+				fmt.Println(r.ErrorDetail.Message)
+				return errors.New(r.ErrorDetail.Message)
+			} else {
+				// save image
+				var imageId string
+				fmt.Println(r.Stream)
+				if strings.HasPrefix(r.Stream, "Successfully built") {
+					fmt.Sscanf(r.Stream, "Successfully built %s", &imageId)
+					fmt.Println("imageId: ", imageId)
+					fmt.Println("imageTag: ", imageTag)
+					if err := w.c.ImageTag(ctx, imageId, imageTag); err != nil {
+						return err
+					}
+					return nil
+				}
+			}
 		}
 
-		return nil
+		return errors.New("build failed")
 	}
 }
 
