@@ -21,8 +21,14 @@ func TestIndex(t *testing.T) {
 	if res, err := controller_helper.Index(s.URL); err != nil {
 		t.Fatal(err)
 	} else {
-		if res.Builds[0].Id != b.Id {
-			t.Fatal("/builds returns all build")
+		var ok bool = false
+		for _, b := range res.Builds {
+			if b.Id == b.Id {
+				ok = true
+			}
+		}
+		if !ok {
+			t.Fatal("GET /builds should return all build")
 		}
 	}
 }
