@@ -8,6 +8,7 @@ import (
 	"github.com/codestand/build/util"
 	"github.com/codestand/build/worker"
 	"golang.org/x/net/context"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -94,10 +95,12 @@ echo hello 3
 	}
 
 	finished := make(chan bool)
+	resp, err := w.Attach(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
 	go func() {
-		if err := w.Attach(ctx, out); err != nil {
-			t.Fatal(err)
-		}
+		io.Copy(out, resp.Reader)
 		b, err := ioutil.ReadFile(LOGFILE)
 		if err != nil {
 			t.Fatal(err)

@@ -87,15 +87,7 @@ func (w *Worker) IsFinished(ctx context.Context) (bool, error) {
 	return c.State.Status == "exited", nil
 }
 
-func (w *Worker) Attach(ctx context.Context, out io.Writer) error {
+func (w *Worker) Attach(ctx context.Context) (types.HijackedResponse, error) {
 	opts := types.ContainerAttachOptions{Stream: true, Stdin: false, Stdout: true, Stderr: true}
-	resp, err := w.c.ContainerAttach(ctx, w.Id, opts)
-	if err != nil {
-		return err
-	}
-
-	// wait output
-	io.Copy(out, resp.Reader)
-	resp.Close()
-	return nil
+	return w.c.ContainerAttach(ctx, w.Id, opts)
 }
