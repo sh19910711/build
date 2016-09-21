@@ -1,11 +1,13 @@
 package worker
 
 import (
+	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"golang.org/x/net/context"
 	"io"
+	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -95,7 +97,9 @@ func (w *Worker) Attach(ctx context.Context, out io.Writer) error {
 	}
 
 	// wait output
-	io.Copy(out, resp.Reader)
+	b, _ := ioutil.ReadAll(resp.Reader)
+	fmt.Println(string(b))
+	io.Copy(os.Stdout, resp.Reader)
 	resp.Close()
 	return nil
 }

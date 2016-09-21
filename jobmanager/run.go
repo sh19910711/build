@@ -5,14 +5,17 @@ import (
 )
 
 func (m *JobManager) Run(callbackUrl string) (exitCode int, err error) {
+	println("Run: start")
 	if err := m.w.Start(m.ctx); err != nil {
 		return -1, err
 	}
 
+	println("Run: wait")
 	if exitCode, err = m.w.Wait(m.ctx); err != nil {
 		return -2, err
 	}
 
+	println("Run: callback")
 	if err := m.fireCallback(callbackUrl); err != nil {
 		return -3, err
 	}
