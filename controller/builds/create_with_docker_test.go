@@ -8,6 +8,8 @@ import (
 	"github.com/codestand/build/test/testhelper"
 	"github.com/codestand/build/test/testhelper/controller_helper"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
@@ -73,4 +75,20 @@ func TestCreate(t *testing.T) {
 	case <-time.After(3 * time.Second):
 		t.Fatal("the build should be finished in a few second")
 	}
+
+	req, err := testhelper.Get(s.URL+"/builds/"+build.Id+"/log.txt", map[string]string{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := http.Client{}
+	res, err := c.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	b, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	println(string(b))
 }
