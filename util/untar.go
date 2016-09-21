@@ -7,6 +7,46 @@ import (
 	"path/filepath"
 )
 
+func CheckFileInTar(r io.Reader, filename string) (bool, error) {
+	tr := tar.NewReader(r)
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return false, err
+		}
+		if hdr.Name == filename {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func ReadFileFromTar(r io.Reader, filename string) (res io.Reader, err error) {
+	pr, pw := io.Pipe()
+	tr := tar.NewReader(r)
+
+	// iterate through the files
+	for {
+		header, err := tr.Next()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return res, err
+		}
+
+		if header.Name == filename {
+			if _, err := io.Copy(pw, tr); err != nil {
+				return res, err
+			}
+			return pr, nil
+		}
+	}
+
+	return res, nil
+}
+
 func Untar(r io.Reader, dstPrefix string) error {
 	// extract artifacts from archive
 	tr := tar.NewReader(r)
