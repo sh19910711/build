@@ -40,7 +40,7 @@ func Wait() {
 }
 
 func spawn(j job.Job) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	m := jobmanager.New(ctx, j)
 

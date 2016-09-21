@@ -2,6 +2,7 @@ package jobmanager
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -11,23 +12,23 @@ func (m *JobManager) Attach() error {
 	if err := os.MkdirAll(filepath.Dir(m.j.LogPath), 0755); err != nil {
 		return err
 	}
+	out, err := os.Create(m.j.LogPath) // TODO: use memory first?
+	if err != nil {
+		return err
+	}
+
+	resp, err := m.w.Attach(m.ctx)
+	if err != nil {
+		return err
+	}
+	resp.CloseWrite()
 
 	// wait output from worker
 	go func() {
-		out, err := os.Create(m.j.LogPath) // TODO: use memory first?
-		defer out.Close()
-		if err != nil {
+		io.Copy(out, resp.Reader)
+		if err := out.Close(); err != nil {
 			log.Warn("Attach: ", err)
-			return
 		}
-
-		print("attach: created: ")
-		println(m.j.LogPath)
-		if err := m.w.Attach(m.ctx, out); err != nil {
-			log.Warn("Attach: ", err)
-			return
-		}
-		println("attach: finished")
 	}()
 
 	return nil
