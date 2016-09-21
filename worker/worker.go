@@ -11,6 +11,7 @@ import (
 	"github.com/docker/docker/client"
 	"golang.org/x/net/context"
 	"io"
+	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -36,12 +37,13 @@ func init() {
 }
 
 type Worker struct {
-	Id string
-	c  *client.Client // docker engine client
+	Id        string
+	c         *client.Client // docker engine client
+	ImageName string
 }
 
 func New() (w Worker) {
-	return Worker{c: dockerClient}
+	return Worker{c: dockerClient, ImageName: "build"}
 }
 
 func (w *Worker) Create(ctx context.Context, imageName string, cmd string) (err error) {
@@ -93,12 +95,16 @@ type ImageBuildResponse struct {
 	ErrorDetail *ImageBuildError `json:"errorDetail,omitempty"`
 }
 
-func (w *Worker) ImageBuild(ctx context.Context, imageTag string, dockerfile *bytes.Buffer) error {
+func (w *Worker) ImageBuild(ctx context.Context, imageTag string, dockerfile io.Reader) error {
 	// buildOptions can limit compute resources for builds
 	options := types.ImageBuildOptions{}
 
 	// archvie dockerfile
-	r, err := util.ArchiveBuffer(dockerfile, "Dockerfile")
+	b, err := ioutil.ReadAll(dockerfile)
+	if err != nil {
+		return err
+	}
+	r, err := util.ArchiveBuffer(bytes.NewBuffer(b), "Dockerfile")
 	if err != nil {
 		return err
 	}
