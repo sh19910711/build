@@ -2,6 +2,7 @@ package jobqueue
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/codestand/build/jobmanager"
 	"github.com/codestand/build/model/job"
 )
 
@@ -27,10 +28,12 @@ func Push(j job.Job) {
 func Wait() {
 	for {
 		if j, ok := <-queue; ok {
-			if w, err := CreateWorker(j.Src); err != nil {
+			m := jobmanager.New(j)
+
+			if err := m.Create(j.Src); err != nil {
 				log.Warn(err)
 			} else {
-				if exitCode, err := RunWorker(w, j.Callback); err != nil {
+				if exitCode, err := m.Run(j.Callback); err != nil {
 					log.Warn(err)
 					j.ExitCode = -1
 				} else {
