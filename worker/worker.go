@@ -1,6 +1,10 @@
 package worker
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"github.com/codestand/build/util"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
@@ -76,6 +80,43 @@ func (w *Worker) Wait(ctx context.Context) (int, error) {
 
 func (w *Worker) Destroy(ctx context.Context) error {
 	return w.c.ContainerRemove(ctx, w.Id, types.ContainerRemoveOptions{})
+}
+
+type ImageBuildResponse struct {
+	Stream string `json:"stream,omitempty"`
+}
+
+func (w *Worker) ImageBuild(ctx context.Context, imageName string, dockerfile *bytes.Buffer) error {
+	// buildOptions can limit compute resources for builds
+	options := types.ImageBuildOptions{}
+
+	// archvie dockerfile
+	r, err := util.ArchiveBuffer(dockerfile, "Dockerfile")
+	if err != nil {
+		return err
+	}
+
+	// build image
+	if res, err := w.c.ImageBuild(ctx, r, options); err != nil {
+		return err
+	} else {
+		// read build log
+		defer res.Body.Close()
+		dec := json.NewDecoder(res.Body)
+
+		for {
+			var r ImageBuildResponse
+			if err := dec.Decode(&r); err != nil {
+				if err == io.EOF {
+					break
+				}
+				return err
+			}
+			fmt.Print(r.Stream)
+		}
+
+		return nil
+	}
 }
 
 func (w *Worker) IsFinished(ctx context.Context) (bool, error) {
