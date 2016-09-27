@@ -25,7 +25,7 @@ func TestCreate(t *testing.T) {
 }
 
 func TestImageBuild(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	w := worker.New()
 
