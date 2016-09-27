@@ -17,15 +17,13 @@ func (m *JobManager) Attach() error {
 		return err
 	}
 
-	resp, err := m.w.Attach(m.ctx)
+	r, err := m.w.Attach(m.ctx)
 	if err != nil {
 		return err
 	}
-	resp.CloseWrite()
-
 	// wait output from worker
 	go func() {
-		io.Copy(out, resp.Reader)
+		io.Copy(out, r)
 		if err := out.Close(); err != nil {
 			log.Warn("Attach: ", err)
 		}
