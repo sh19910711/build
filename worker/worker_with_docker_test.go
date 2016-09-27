@@ -72,12 +72,11 @@ RUN echo hello
 	buildScript := bytes.NewBufferString(`
 #!/bin/sh
 
+echo hello 1 > /dev/stdout
 sleep 1
-echo hello 1
+echo hello 2 > /dev/stderr
 sleep 1
-echo hello 2
-sleep 1
-echo hello 3
+echo hello 3 > /dev/stdout
 `)
 	buildTar, err := util.ArchiveBuffer(buildScript, "build.sh")
 	if err != nil {
@@ -89,18 +88,20 @@ echo hello 3
 
 	const LOGFILE = "tmp/attach.log"
 
+	finished := make(chan bool)
+	r, err := w.Attach(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	out, err := os.Create(LOGFILE)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	finished := make(chan bool)
-	resp, err := w.Attach(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
 	go func() {
-		io.Copy(out, resp.Reader)
+		io.Copy(out, r)
+
 		b, err := ioutil.ReadFile(LOGFILE)
 		if err != nil {
 			t.Fatal(err)
@@ -113,7 +114,7 @@ echo hello 3
 			finished <- false
 			return
 		}
-		if !strings.Contains(string(b), "hello 1") {
+		if !strings.Contains(string(b), "hello 3") {
 			finished <- false
 			return
 		}
