@@ -1,14 +1,15 @@
-.PHONY: build run test init
+.PHONY: build release run test test_all init archive
 
 build:
 	govendor sync
 	go build -i -o app
 
+release:
+	govendor sync
+	go build -tags release -i -o app
+
 run: build
 	go run main.go
-
-fmt:
-	go fmt `go list ./... | grep -v \/vendor\/`
 
 test:
 	mkdir -p tmp
@@ -23,3 +24,6 @@ init:
 	govendor init
 	govendor sync
 	govendor fetch +missing
+
+archive: release
+	tar zcvf app.tar.gz app
