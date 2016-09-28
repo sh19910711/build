@@ -1,7 +1,8 @@
 .PHONY: build run test init
+
 build:
 	govendor sync
-	go build -i
+	go build -i -o app
 
 run: build
 	go run main.go
