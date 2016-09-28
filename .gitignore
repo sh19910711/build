@@ -1,3 +1,4 @@
-/build
 /vendor/*
 !/vendor/vendor.json
+/app
+/app.tar.gz
