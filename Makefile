@@ -4,6 +4,10 @@ build:
 	govendor sync
 	go build -i -o app
 
+release:
+  govendor sync
+  go build -tags release -i -o app
+
 run: build
 	go run main.go
 
@@ -21,5 +25,5 @@ init:
 	govendor sync
 	govendor fetch +missing
 
-archive: build
+archive: release
 	tar zcvf app.tar.gz app
