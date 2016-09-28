@@ -14,8 +14,6 @@ install:
 
 script:
   - make test_all
-
-  # e2e test
   - PORT=8080 make run &
   - sleep 7
   - curl --form file=@example/app.tar --form callback=http://localhost:8888/callback http://localhost:8080/builds
@@ -25,3 +23,14 @@ script:
 cache:
   directories:
     - vendor
+
+before_deploy:
+  - make archive
+
+deploy:
+  provider: releases
+  api_key:
+    secure: "j4ommlqC97U/lif3LxRzx7tnAbtTzYgee14S6Z4ju9YuKzXS8DpUT2Q4OsIV2vvf9o1PBObGHl+SItGv4YtEHaQFhJvqyBLE8vJ3rl8I4nKTFLtwHSfPg5X3G38MHZX3Bz/1iyKwK+5ZgpuCOPoKkgAfH4DB0YclDKuGhIX2M2Zs3jybvzQhWkqICPt7ldSdwrW9eMsiX2dTKjt3GxUVCz7WIUKHiN8YAMRIwz1eZgnYlrIsKiwSR26SqZrOddRa6KB+wWu7+ngUNzICQ/vz2v9ISoTAfndlOC2J4SxrNMe/7/ZmK34sdiJIjEiM/0hB/ixq3pmzjfIqsal7YvA9n3rnmJjrZkAvZnmEvW+UGmEsko2ijPmnGTVAlaHdbxG1AMI87Qz1uoLGR+Vid3gGhPzH+WVmrNH+bOXqVCXkuCHdSRCOr+0kqsIyCobjwowOlvxV23AlV3RKiXFeQ44LaFGjuLp16n9f5sHSpVggeKOz3N5bnLaOI4jgS3h42DU3VBqLD0hM7V/AAZSoOZxJx8JHNjAfPqqUyYXkcm9D4ZLVITzRVGAkX93tiSAChp2gAkzYApUz1BTwKIU6JajVW3HuC3DWQMsLPOEj3e8u/ZSsHF7yolEucI66S9CRLMiF0jpfwfIfDWyCwQruyzMJ7AqQt0DusXceFxnPu6QpYus="
+  file: app.tar.gz
+  on:
+    tags: true
