@@ -5,8 +5,8 @@ build:
 	go build -i -o app
 
 release:
-  govendor sync
-  go build -tags release -i -o app
+	govendor sync
+	go build -tags release -i -o app
 
 run: build
 	go run main.go
