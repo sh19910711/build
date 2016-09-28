@@ -26,7 +26,7 @@ Returns all builds:
 ```json
 {
   "builds": [
-    <Build Details>
+    "Build Details"
   ]
 }
 ```
@@ -37,7 +37,7 @@ Create new build:
 
 ```json
 {
-  "id": <Build ID>
+  "id": "Build ID"
 }
 ```
 
@@ -47,9 +47,9 @@ Returns details of the build:
 
 ```json
 {
-  "id": <Build ID>,
+  "id": "Build ID",
   "jobs": [
-    <Job Details>
+    "Job Details"
   ]
 }
 ```
@@ -60,8 +60,8 @@ Returns details of the build job:
 
 ```json
 {
-  "id": <Job ID>,
-  "finished": <bool>,
+  "id": "Job ID",
+  "finished": "bool"
 }
 ```
 
