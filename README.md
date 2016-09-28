@@ -31,7 +31,7 @@ Returns all builds:
 }
 ```
 
-### POST /builds
+#### POST /builds
 
 Create new build:
 
@@ -41,7 +41,7 @@ Create new build:
 }
 ```
 
-### GET /builds/:id
+#### GET /builds/:id
 
 Returns details of the build:
 
@@ -54,7 +54,7 @@ Returns details of the build:
 }
 ```
 
-### GET /builds/:id/jobs/:job_id
+#### GET /builds/:id/jobs/:job_id
 
 Returns details of the build job:
 
@@ -65,6 +65,6 @@ Returns details of the build job:
 }
 ```
 
-### GET /builds/:id/jobs/:job_id/log.txt
+#### GET /builds/:id/jobs/:job_id/log.txt
 
 Returns log messages of the build job
