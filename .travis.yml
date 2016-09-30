@@ -7,7 +7,6 @@ services:
 
 install:
   - make init
-  - govendor list
   - make build
   - go build -i test/callback_server.go
   - docker build -t build -f example/build.docker .

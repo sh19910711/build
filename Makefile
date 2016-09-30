@@ -6,7 +6,7 @@ build:
 
 release:
 	govendor sync
-	go build -tags release -i -o app
+	go build -a -tags release -installsuffix app -o app
 
 run: build
 	go run main.go
@@ -26,4 +26,6 @@ init:
 	govendor fetch +missing
 
 archive: release
+	sudo chmod -R 0755 app
+	sudo chown -R root. app
 	tar zcvf app.tar.gz app
