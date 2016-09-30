@@ -6,7 +6,7 @@ build:
 
 release:
 	govendor sync
-	go build -a -tags release -installsuffix app -o app
+	CGO_ENABLED=0 go build -a -installsuffix cgo -tags release -o app
 
 run: build
 	go run main.go
