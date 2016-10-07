@@ -19,7 +19,9 @@ import (
 func TestCreate(t *testing.T) {
 	ctx := context.Background()
 	w := worker.New()
-	if err := w.Create(ctx, "build", "bash /build.bash"); err != nil {
+	w.Image = "build"
+	w.Cmd = []string{"bash", "/build.bash"}
+	if err := w.Create(ctx); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -30,21 +32,23 @@ func TestImageBuild(t *testing.T) {
 	w := worker.New()
 
 	t.Run("hello", func(t *testing.T) {
+		w.Image = "cs-build/test/hello"
 		buf := bytes.NewBufferString(`
 FROM alpine:3.4
 RUN echo hello
 `)
-		if err := w.ImageBuild(ctx, "cs-build/test/hello", buf); err != nil {
+		if err := w.ImageBuild(ctx, buf); err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("fail on run command", func(t *testing.T) {
+		w.Image = "cs-build/test/fail"
 		buf := bytes.NewBufferString(`
 FROM alpine:3.4
 RUN false
 `)
-		if err := w.ImageBuild(ctx, "cs-build/test/fail", buf); err == nil {
+		if err := w.ImageBuild(ctx, buf); err == nil {
 			t.Fatal("build should be failed")
 		}
 	})
@@ -53,19 +57,22 @@ RUN false
 func TestAttach(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
 	w := worker.New()
+	w.Image = "cs-build/test/attach"
+	w.Cmd = []string{"sh", "/build.sh"}
 
 	// prepare build image
 	dockerfile := bytes.NewBufferString(`
 FROM alpine:3.4
 RUN echo hello
 `)
-	if err := w.ImageBuild(ctx, "cs-build/test/attach", dockerfile); err != nil {
+	if err := w.ImageBuild(ctx, dockerfile); err != nil {
 		t.Fatal(err)
 	}
 
 	// create worker
-	if err := w.Create(ctx, "cs-build/test/attach", "sh /build.sh"); err != nil {
+	if err := w.Create(ctx); err != nil {
 		t.Fatal(err)
 	}
 

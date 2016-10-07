@@ -7,7 +7,6 @@ import (
 	"golang.org/x/net/context"
 	"io"
 	"os"
-	"strings"
 )
 
 const DOCKER_ENDPOINT = "unix:///var/run/docker.sock"
@@ -31,19 +30,24 @@ func init() {
 }
 
 type Worker struct {
-	Id        string
-	c         *client.Client // docker engine client
-	ImageName string
+	Id    string
+	c     *client.Client // docker engine client
+	Image string
+	Cmd   []string
 }
 
 func New() (w Worker) {
-	return Worker{c: dockerClient, ImageName: "build"}
+	return Worker{
+		c:     dockerClient,
+		Image: "build",
+		Cmd:   []string{"bash", "/build.bash"},
+	}
 }
 
-func (w *Worker) Create(ctx context.Context, imageName string, cmd string) (err error) {
+func (w *Worker) Create(ctx context.Context) (err error) {
 	config := container.Config{
-		Image: imageName,
-		Cmd:   strings.Split(cmd, " "),
+		Image: w.Image,
+		Cmd:   w.Cmd,
 	}
 	c, err := w.c.ContainerCreate(ctx, &config, nil, nil, "")
 	if err != nil {

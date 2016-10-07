@@ -23,7 +23,7 @@ type ImageBuildResponse struct {
 	ErrorDetail *ImageBuildError `json:"errorDetail,omitempty"`
 }
 
-func (w *Worker) ImageBuild(ctx context.Context, imageTag string, dockerfile io.Reader) error {
+func (w *Worker) ImageBuild(ctx context.Context, dockerfile io.Reader) error {
 	// buildOptions can limit compute resources for builds
 	options := types.ImageBuildOptions{}
 
@@ -62,7 +62,7 @@ func (w *Worker) ImageBuild(ctx context.Context, imageTag string, dockerfile io.
 				var imageId string
 				if strings.HasPrefix(r.Stream, "Successfully built") {
 					fmt.Sscanf(r.Stream, "Successfully built %s", &imageId)
-					if err := w.c.ImageTag(ctx, imageId, imageTag); err != nil {
+					if err := w.c.ImageTag(ctx, imageId, w.Image); err != nil {
 						return err
 					}
 					return nil
