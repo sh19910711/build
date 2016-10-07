@@ -67,6 +67,7 @@ func TestAttach(t *testing.T) {
 FROM alpine:3.4
 RUN echo hello
 `)
+
 	if err := w.ImageBuild(ctx, dockerfile); err != nil {
 		t.Fatal(err)
 	}
