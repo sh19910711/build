@@ -4,17 +4,22 @@ import (
 	"github.com/codestand/build/util"
 	"github.com/codestand/build/worker"
 	uuid "github.com/satori/go.uuid"
+	"io"
 	"os"
 )
 
 func (m *JobManager) Create(src string) error {
 	m.w = worker.New()
 
-	if err := m.buildWithDockerfileIfExists(src); err != nil {
+	if ok, r, err := m.getDockerFile(src); err != nil {
 		return err
+	} else if ok {
+		if err := m.buildWithDockerfileIfExists(r); err != nil {
+			return err
+		}
 	}
 
-	if err := m.w.Create(m.ctx, m.w.ImageName, "bash /build.bash"); err != nil {
+	if err := m.w.Create(m.ctx); err != nil {
 		return err
 	}
 
@@ -29,26 +34,33 @@ func (m *JobManager) Create(src string) error {
 	return nil
 }
 
-func (m *JobManager) buildWithDockerfileIfExists(tarPath string) error {
+func (m *JobManager) getDockerFile(tarPath string) (ok bool, nilReader io.Reader, err error) {
+	var filename string = "Dockerfile"
 	tarball, err := os.Open(tarPath)
+	defer tarball.Close()
 	if err != nil {
-		return err
+		return false, nilReader, err
 	}
-	if ok, err := util.CheckFileInTar(tarball, "Dockerfile"); err != nil {
-		return err
+	if ok, err := util.CheckFileInTar(tarball, filename); err != nil {
+		return false, nilReader, err
 	} else if ok {
 		if r, err := util.ReadFileFromTar(tarball, "Dockerfile"); err != nil {
-			return err
+			return false, nilReader, err
 		} else {
-			imageName := uuid.NewV4().String()
-			if err := m.w.ImageBuild(m.ctx, imageName, r); err != nil {
-				return err
-			} else {
-				m.w.ImageName = imageName
-			}
+			return true, r, nil
 		}
+	} else {
+		return false, nilReader, nil
 	}
-	return nil
+}
+
+func (m *JobManager) buildWithDockerfileIfExists(r io.Reader) error {
+	m.w.Image = uuid.NewV4().String()
+	if err := m.w.ImageBuild(m.ctx, r); err != nil {
+		return err
+	} else {
+		return nil
+	}
 }
 
 func (m *JobManager) copyAppCodeToWorker(tarPath string) error {
