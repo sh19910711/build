@@ -11,9 +11,9 @@ import (
 func (m *JobManager) Create(src string) error {
 	m.w = worker.New()
 
-	if ok, r, err := m.getDockerFile(src); err != nil {
+	if hasDockerFile, r, err := m.getDockerFile(src); err != nil {
 		return err
-	} else if ok {
+	} else if hasDockerFile {
 		if err := m.buildWithDockerfileIfExists(r); err != nil {
 			return err
 		}
@@ -37,10 +37,11 @@ func (m *JobManager) Create(src string) error {
 func (m *JobManager) getDockerFile(tarPath string) (ok bool, nilReader io.Reader, err error) {
 	var filename string = "Dockerfile"
 	tarball, err := os.Open(tarPath)
-	defer tarball.Close()
 	if err != nil {
 		return false, nilReader, err
 	}
+	defer tarball.Close()
+
 	if ok, err := util.CheckFileInTar(tarball, filename); err != nil {
 		return false, nilReader, err
 	} else if ok {
