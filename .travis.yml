@@ -12,7 +12,7 @@ install:
   - docker build -t build -f example/build.docker .
 
 script:
-  - bash test/script/callback_test.bash
+  - PORT=18080 bash test/script/callback_test.bash
   - ./tmp/app
 
 cache:
