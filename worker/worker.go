@@ -51,13 +51,11 @@ func (w *Worker) Create(ctx context.Context) (err error) {
 		Cmd:   w.Cmd,
 	}
 
-	// use image command if exist for now
+	// Use command defined in Dockerfile if exists
 	if info, _, err := w.c.ImageInspectWithRaw(ctx, w.Image); err != nil {
 		return err
-	} else {
-		if len(info.Config.Cmd) > 0 {
-			config.Cmd = info.Config.Cmd
-		}
+	} else if len(info.Config.Cmd) > 0 {
+		config.Cmd = info.Config.Cmd
 	}
 
 	c, err := w.c.ContainerCreate(ctx, &config, nil, nil, "")
