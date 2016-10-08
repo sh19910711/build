@@ -23,53 +23,65 @@ type ImageBuildResponse struct {
 	ErrorDetail *ImageBuildError `json:"errorDetail,omitempty"`
 }
 
-func (w *Worker) ImageBuild(ctx context.Context, imageTag string, dockerfile io.Reader) error {
-	// buildOptions can limit compute resources for builds
+func archiveDockerfile(in io.Reader) (nilReader io.Reader, err error) {
+	b, err := ioutil.ReadAll(in)
+	if err != nil {
+		return nilReader, err
+	}
+
+	if r, err := util.ArchiveBuffer(bytes.NewBuffer(b), "Dockerfile"); err != nil {
+		return nilReader, err
+	} else {
+		return r, nil
+	}
+}
+
+func getImageIdFromResponseBody(resBody io.Reader) (nilImageId string, err error) {
+	dec := json.NewDecoder(resBody)
+
+	for { // each command and its output
+		var r ImageBuildResponse
+		if err := dec.Decode(&r); err != nil {
+			if err == io.EOF {
+				break
+			}
+			return nilImageId, err
+		}
+
+		if r.ErrorDetail != nil {
+			return nilImageId, errors.New(r.ErrorDetail.Message)
+		} else {
+			if strings.HasPrefix(r.Stream, "Successfully built") {
+				var imageId string
+				fmt.Sscanf(r.Stream, "Successfully built %s", &imageId)
+				return imageId, nil
+			}
+		}
+	}
+
+	return nilImageId, errors.New("build failed")
+}
+
+func (w *Worker) ImageBuild(ctx context.Context, dockerfile io.Reader) error {
+	// the options can limit compute resources for builds
 	options := types.ImageBuildOptions{}
 
-	// archvie dockerfile
-	b, err := ioutil.ReadAll(dockerfile)
-	if err != nil {
-		return err
-	}
-	r, err := util.ArchiveBuffer(bytes.NewBuffer(b), "Dockerfile")
+	r, err := archiveDockerfile(dockerfile)
 	if err != nil {
 		return err
 	}
 
-	// build image
 	if res, err := w.c.ImageBuild(ctx, r, options); err != nil {
 		return err
 	} else {
-		// read build log
 		defer res.Body.Close()
-		dec := json.NewDecoder(res.Body)
-
-		for {
-			var r ImageBuildResponse
-			if err := dec.Decode(&r); err != nil {
-				if err == io.EOF {
-					break
-				}
+		if imageId, err := getImageIdFromResponseBody(res.Body); err != nil {
+			return err
+		} else {
+			if err := w.c.ImageTag(ctx, imageId, w.Image); err != nil {
 				return err
 			}
-
-			// TODO: improve log handling
-			if r.ErrorDetail != nil {
-				return errors.New(r.ErrorDetail.Message)
-			} else {
-				// save image
-				var imageId string
-				if strings.HasPrefix(r.Stream, "Successfully built") {
-					fmt.Sscanf(r.Stream, "Successfully built %s", &imageId)
-					if err := w.c.ImageTag(ctx, imageId, imageTag); err != nil {
-						return err
-					}
-					return nil
-				}
-			}
+			return nil
 		}
-
-		return errors.New("build failed")
 	}
 }
