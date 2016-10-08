@@ -7,21 +7,21 @@ import (
 	"golang.org/x/net/context"
 	"io"
 	"os"
-	"strings"
 )
 
-const DOCKER_ENDPOINT = "unix:///var/run/docker.sock"
+const DEFAULT_DOCKER_ENDPOINT = "unix:///var/run/docker.sock"
 const DOCKER_API_VERSION = "v1.18"
 
 var dockerClient *client.Client
 
 func init() {
 	headers := map[string]string{
-		"User-Agent": "engine-api",
+		"User-Agent": "codestand-build",
 	}
+	// $ export DOCKER_HOST=tcp://dockerhost:2375
 	endpoint := os.Getenv("DOCKER_HOST")
 	if endpoint == "" {
-		endpoint = DOCKER_ENDPOINT
+		endpoint = DEFAULT_DOCKER_ENDPOINT
 	}
 	if cli, err := client.NewClient(endpoint, DOCKER_API_VERSION, nil, headers); err != nil {
 		panic(err)
@@ -31,20 +31,33 @@ func init() {
 }
 
 type Worker struct {
-	Id        string
-	c         *client.Client // docker engine client
-	ImageName string
+	Id    string
+	c     *client.Client // docker engine client
+	Image string
+	Cmd   []string
 }
 
 func New() (w Worker) {
-	return Worker{c: dockerClient, ImageName: "build"}
+	return Worker{
+		c:     dockerClient,
+		Image: "build",
+		Cmd:   []string{"bash", "/build.bash"},
+	}
 }
 
-func (w *Worker) Create(ctx context.Context, imageName string, cmd string) (err error) {
+func (w *Worker) Create(ctx context.Context) (err error) {
 	config := container.Config{
-		Image: imageName,
-		Cmd:   strings.Split(cmd, " "),
+		Image: w.Image,
+		Cmd:   w.Cmd,
 	}
+
+	// Use command defined in Dockerfile if exists
+	if info, _, err := w.c.ImageInspectWithRaw(ctx, w.Image); err != nil {
+		return err
+	} else if len(info.Config.Cmd) > 0 {
+		config.Cmd = info.Config.Cmd
+	}
+
 	c, err := w.c.ContainerCreate(ctx, &config, nil, nil, "")
 	if err != nil {
 		return err
