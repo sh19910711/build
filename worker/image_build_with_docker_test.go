@@ -5,9 +5,7 @@ package worker_test
 import (
 	"bytes"
 	"github.com/codestand/build/worker"
-	"golang.org/x/net/context"
 	"testing"
-	"time"
 )
 
 const DOCKERFILE_WITHOUT_CMD string = `
@@ -22,7 +20,7 @@ RUN false
 
 func TestImageBuild(t *testing.T) {
 	t.Run("without cmd", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		ctx, cancel := contextWithTimeout()
 		defer cancel()
 
 		w := worker.New()
@@ -35,7 +33,7 @@ func TestImageBuild(t *testing.T) {
 	})
 
 	t.Run("failed", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		ctx, cancel := contextWithTimeout()
 		defer cancel()
 
 		w := worker.New()
