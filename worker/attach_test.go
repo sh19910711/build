@@ -7,55 +7,15 @@ import (
 	_ "github.com/codestand/build/test/testhelper"
 	"github.com/codestand/build/util"
 	"github.com/codestand/build/worker"
-	"golang.org/x/net/context"
 	"io"
 	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
-	"time"
 )
 
-func TestCreate(t *testing.T) {
-	ctx := context.Background()
-	w := worker.New()
-	w.Image = "build"
-	w.Cmd = []string{"bash", "/build.bash"}
-	if err := w.Create(ctx); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestImageBuild(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
-	w := worker.New()
-
-	t.Run("hello", func(t *testing.T) {
-		w.Image = "cs-build/test/hello"
-		buf := bytes.NewBufferString(`
-FROM alpine:3.4
-RUN echo hello
-`)
-		if err := w.ImageBuild(ctx, buf); err != nil {
-			t.Fatal(err)
-		}
-	})
-
-	t.Run("fail on run command", func(t *testing.T) {
-		w.Image = "cs-build/test/fail"
-		buf := bytes.NewBufferString(`
-FROM alpine:3.4
-RUN false
-`)
-		if err := w.ImageBuild(ctx, buf); err == nil {
-			t.Fatal("build should be failed")
-		}
-	})
-}
-
 func TestAttach(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := contextWithTimeout()
 	defer cancel()
 
 	w := worker.New()
