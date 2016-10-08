@@ -9,7 +9,7 @@ import (
 )
 
 func contextWithTimeout() (context.Context, func()) {
-	return context.WithTimeout(context.Background(), 5*time.Second)
+	return context.WithTimeout(context.Background(), 15*time.Second)
 }
 
 func getFakeBuildScriptTar() (io.Reader, error) {
