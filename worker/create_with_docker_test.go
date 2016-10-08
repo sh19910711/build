@@ -15,6 +15,7 @@ func TestCreate(t *testing.T) {
 	w := worker.New()
 	w.Image = "build"
 	w.Cmd = []string{"bash", "/build.bash"}
+
 	if err := w.Create(ctx); err != nil {
 		t.Fatal(err)
 	}

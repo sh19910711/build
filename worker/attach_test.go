@@ -5,7 +5,6 @@ package worker_test
 import (
 	"bytes"
 	_ "github.com/codestand/build/test/testhelper"
-	"github.com/codestand/build/util"
 	"github.com/codestand/build/worker"
 	"io"
 	"io/ioutil"
@@ -37,21 +36,12 @@ CMD ["sh", "/build.sh"]
 		t.Fatal(err)
 	}
 
-	buildScript := bytes.NewBufferString(`
-#!/bin/sh
-
-echo hello 1 > /dev/stdout
-sleep 1
-echo hello 2 > /dev/stderr
-sleep 1
-echo hello 3 > /dev/stdout
-`)
-	buildTar, err := util.ArchiveBuffer(buildScript, "build.sh")
-	if err != nil {
+	if buildScriptTar, err := getFakeBuildScriptTar(); err != nil {
 		t.Fatal(err)
-	}
-	if err := w.CopyToWorker(ctx, buildTar, "/"); err != nil {
-		t.Fatal(err)
+	} else {
+		if err := w.CopyToWorker(ctx, buildScriptTar, "/"); err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	const LOGFILE = "tmp/attach.log"
