@@ -12,11 +12,7 @@ install:
   - docker build -t build -f example/build.docker .
 
 script:
-  - make test_all
-  - PORT=8080 make run &
-  - sleep 7
-  - curl --form file=@example/app.tar --form callback=http://localhost:8888/callback http://localhost:8080/builds
-  - PORT=8888 ./callback_server --timeout 3 || exit 1
+  - bash test/script/callback_test.bash
   - ./tmp/app
 
 cache:
