@@ -2,3 +2,4 @@
 !/vendor/vendor.json
 /app
 /app.tar.gz
+/callback_server
