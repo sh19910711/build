@@ -47,9 +47,7 @@ Returns details of the build:
 ```json
 {
   "id": "Build ID",
-  "jobs": [
-    "Job Details"
-  ]
+  "jobs": ["Job Details"]
 }
 ```
 

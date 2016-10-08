@@ -1,0 +1,18 @@
+api: 1
+name: hello
+lang: c++
+
+sources:
+  - main.cpp
+
+config:
+  BLINK_INTERVAL:
+    desc: The interval of blinking (in msec)
+    type: int
+    default: 1000
+  MainLED:
+    desc: The LED to be blinked
+    type: driver
+    driver: led
+    gpio:
+      pin: 5

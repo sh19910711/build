@@ -1,0 +1,12 @@
+BOARD:
+  type: string
+  value: esp8266
+BLINK_INTERVAL:
+  type: int
+  value: 1000
+MainLED:
+    type: driver
+    driver: led
+    interface: gpio
+    gpio:
+      pin: 13
