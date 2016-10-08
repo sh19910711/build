@@ -13,7 +13,7 @@ func contextWithTimeout() (context.Context, func()) {
 }
 
 func getFakeBuildScriptTar() (io.Reader, error) {
-	script := bytes.NewBufferString(`
+	r := bytes.NewBufferString(`
 #!/bin/sh
 
 echo hello 1 > /dev/stdout
@@ -22,5 +22,5 @@ echo hello 2 > /dev/stderr
 sleep 1
 echo hello 3 > /dev/stdout
 `)
-	return util.ArchiveBuffer(script, "build.sh")
+	return util.ArchiveBuffer(r, "build.sh")
 }
