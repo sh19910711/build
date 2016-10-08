@@ -39,7 +39,7 @@ func archiveDockerfile(in io.Reader) (nilReader io.Reader, err error) {
 func getImageIdFromResponseBody(resBody io.Reader) (nilImageId string, err error) {
 	dec := json.NewDecoder(resBody)
 
-	for {
+	for { // each command and its output
 		var r ImageBuildResponse
 		if err := dec.Decode(&r); err != nil {
 			if err == io.EOF {
@@ -48,7 +48,6 @@ func getImageIdFromResponseBody(resBody io.Reader) (nilImageId string, err error
 			return nilImageId, err
 		}
 
-		// TODO: improve log handling
 		if r.ErrorDetail != nil {
 			return nilImageId, errors.New(r.ErrorDetail.Message)
 		} else {
@@ -64,7 +63,7 @@ func getImageIdFromResponseBody(resBody io.Reader) (nilImageId string, err error
 }
 
 func (w *Worker) ImageBuild(ctx context.Context, dockerfile io.Reader) error {
-	// buildOptions can limit compute resources for builds
+	// the options can limit compute resources for builds
 	options := types.ImageBuildOptions{}
 
 	r, err := archiveDockerfile(dockerfile)
@@ -72,7 +71,6 @@ func (w *Worker) ImageBuild(ctx context.Context, dockerfile io.Reader) error {
 		return err
 	}
 
-	// build image
 	if res, err := w.c.ImageBuild(ctx, r, options); err != nil {
 		return err
 	} else {

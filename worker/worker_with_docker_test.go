@@ -65,7 +65,7 @@ func TestAttach(t *testing.T) {
 	// prepare build image
 	dockerfile := bytes.NewBufferString(`
 FROM alpine:3.4
-RUN echo hello
+CMD ["sh", "/build.sh"]
 `)
 
 	if err := w.ImageBuild(ctx, dockerfile); err != nil {
