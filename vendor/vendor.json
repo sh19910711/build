@@ -169,10 +169,28 @@
 			"revisionTime": "2016-07-11T13:55:00Z"
 		},
 		{
+			"checksumSHA1": "TUt/L3HArGhZAN1LjQmCY/tKOfk=",
+			"path": "github.com/jinzhu/gorm",
+			"revision": "39165d498058a823126af3cbf4d2a3b0e1acf11e",
+			"revisionTime": "2016-10-07T14:19:28Z"
+		},
+		{
+			"checksumSHA1": "ZtoqVjpOE8VF9n6Ebqyu4vTUYas=",
+			"path": "github.com/jinzhu/inflection",
+			"revision": "74387dc39a75e970e7a3ae6a3386b5bd2e5c5cff",
+			"revisionTime": "2016-08-17T01:46:01Z"
+		},
+		{
 			"checksumSHA1": "b0T0Hzd+zYk+OCDTFMps+jwa/nY=",
 			"path": "github.com/manucorporat/sse",
 			"revision": "ee05b128a739a0fb76c7ebd3ae4810c1de808d6d",
 			"revisionTime": "2016-01-26T18:01:36Z"
+		},
+		{
+			"checksumSHA1": "0YgW0+rmiIzLlvhIKlQ0s0olPg8=",
+			"path": "github.com/mattn/go-sqlite3",
+			"revision": "e5a3c16c5c1d80b24f633e68aecd6b0702786d3d",
+			"revisionTime": "2016-10-04T16:01:36Z"
 		},
 		{
 			"checksumSHA1": "3AoPMXlmVq2+iWMpsdJZkcUKHB8=",
