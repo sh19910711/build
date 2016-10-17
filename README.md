@@ -1,3 +1,12 @@
+## Build server
+
+The build server based on docker :whale:
+
+### Why
+
+* To hide docker hosts from web
+* To provide cross build environment with docker
+
 ### Requirements
 
 * ***Docker >= 1.8***
