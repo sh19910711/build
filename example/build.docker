@@ -1,9 +1,0 @@
-FROM alpine:3.4
-
-RUN apk update && apk add -U bash make gcc musl-dev
-
-RUN mkdir -p /app
-RUN adduser -S user
-RUN chown -R user. /app
-WORKDIR /app
-USER user
