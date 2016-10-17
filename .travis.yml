@@ -5,22 +5,8 @@ sudo: required
 services:
   - docker
 
-install:
-  - make init
-  - make build
-  - go build -i test/callback_server.go
-  - docker build -t build -f example/build.docker .
-
 script:
-  - PORT=18080 bash test/script/callback_test.bash
-  - ./tmp/app
-
-cache:
-  directories:
-    - vendor
-
-before_deploy:
-  - make archive
+  - make build
 
 deploy:
   provider: releases
