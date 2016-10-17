@@ -1,12 +1,14 @@
-.PHONY: build release init
+.PHONY: build release init sync
 
-build:
-	govendor sync
+build: sync
 	go build -i -o bin/app
 
-release:
-	govendor sync
+release: sync
 	CGO_ENABLED=0 go build -a -installsuffix cgo -tags release -o bin/app
+
+sync:
+	govendor sync
+	mkdir -p bin
 
 init:
 	go get -u github.com/kardianos/govendor
