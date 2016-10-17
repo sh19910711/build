@@ -4,55 +4,17 @@
 
 ### Usage
 
-#### Run Server
+#### Run server
 
 ```
-$ make run
+$ make build
+$ ./app
 ```
 
-#### Build Request
+#### Create a build request
+
+Send a json text to `POST /builds`
 
 ```
-$ curl --form file=@example/app.tar --form callback=http://example.com/callback http://localhost:8080/builds
+{"id":"here-is-build-id"}
 ```
-
-### Web API
-
-#### GET /builds
-
-Returns all builds:
-
-```json
-{
-  "builds": [
-    "Build Details"
-  ]
-}
-```
-
-#### POST /builds
-
-Create new build:
-
-```json
-{
-  "id": "Build ID"
-}
-```
-
-#### GET /builds/:id
-
-Returns details of the build:
-
-```json
-{
-  "id": "Build ID",
-  "jobs": [
-    "Job Details"
-  ]
-}
-```
-
-#### GET /builds/:id/log.txt
-
-Returns log messages of the build
