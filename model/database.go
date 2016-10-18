@@ -9,8 +9,9 @@ import (
 var db *gorm.DB
 
 func Open() {
-	url := os.Getenv("DATABASE_URL")
-	if dbLocal, err := gorm.Open("sqlite3", url); err != nil {
+	if url := os.Getenv("DATABASE_URL"); url == "" {
+		panic("DATABASE_URL must be set")
+	} else if dbLocal, err := gorm.Open("sqlite3", url); err != nil {
 		panic(err)
 	} else {
 		db = dbLocal
