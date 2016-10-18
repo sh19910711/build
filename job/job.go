@@ -8,13 +8,13 @@ import (
 
 type Job struct {
 	ctx context.Context
-	w   worker.Worker
-	B   model.Build
+	w   *worker.Worker
+	B   *model.Build
 }
 
-func New(ctx context.Context, b model.Build) JobManager {
-	return JobManager{
+func New(ctx context.Context, b *model.Build) *Job {
+	return &Job{
 		ctx: ctx,
-		B:   B,
+		B:   b,
 	}
 }
