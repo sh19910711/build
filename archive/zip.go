@@ -22,7 +22,7 @@ func ZipToTar(zipfile io.ReaderAt, len int64) (nilReader io.Reader, err error) {
 			if err != nil {
 				return err
 			}
-			if err := tw.WriteHeader(&tar.Header{Name: f.Name, Mode: int64(f.Flags), Size: int64(f.UncompressedSize64)}); err != nil {
+			if err := tw.WriteHeader(&tar.Header{Name: f.Name, Mode: int64(f.Mode()), Size: int64(f.UncompressedSize64)}); err != nil {
 				return err
 			}
 			io.Copy(tw, r)
