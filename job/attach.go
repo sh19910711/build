@@ -1,33 +1,34 @@
 package job
 
 import (
+	"bufio"
 	log "github.com/Sirupsen/logrus"
 	"io"
-	"os"
-	"path/filepath"
 )
 
-func (m *JobManager) Attach() error {
-	// create writer
-	if err := os.MkdirAll(filepath.Dir(m.j.LogPath), 0755); err != nil {
-		return err
-	}
-	out, err := os.Create(m.j.LogPath) // TODO: use memory first?
+func (j *Job) Attach() error {
+	r, err := j.w.Attach(j.ctx)
 	if err != nil {
 		return err
 	}
 
-	r, err := m.w.Attach(m.ctx)
-	if err != nil {
-		return err
-	}
 	// wait output from worker
-	go func() {
-		io.Copy(out, r)
-		if err := out.Close(); err != nil {
-			log.Warn("Attach: ", err)
-		}
-	}()
+	go j.handleWorkerOutput(r)
 
 	return nil
+}
+
+func (j *Job) handleWorkerOutput(r io.Reader) {
+	j.B.ResetLog()
+	br := bufio.NewReaderSize(r, 2048)
+	for {
+		if line, _, err := br.ReadLine(); err == io.EOF {
+			break
+		} else if err != nil {
+			log.Warn("ERROR: Attach: ", err)
+			return
+		} else {
+			j.B.WriteLog(string(line))
+		}
+	}
 }
