@@ -23,8 +23,6 @@ func (w *Worker) Attach(ctx context.Context) (r io.Reader, err error) {
 
 	in, out := io.Pipe()
 	go func() {
-		defer out.Close()
-
 		for {
 			// stream format: header => payload
 			h := DockerStreamHeader{}
@@ -35,6 +33,8 @@ func (w *Worker) Attach(ctx context.Context) (r io.Reader, err error) {
 			}
 			io.CopyN(out, resp.Reader, int64(h.Size))
 		}
+
+		out.Close()
 	}()
 
 	return in, nil
