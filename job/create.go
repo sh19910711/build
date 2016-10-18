@@ -1,40 +1,39 @@
-package jobmanager
+package job
 
 import (
-	"github.com/codestand/build/util"
 	"github.com/codestand/build/worker"
 	uuid "github.com/satori/go.uuid"
 	"io"
 	"os"
 )
 
-func (m *JobManager) Create(src string) error {
-	m.w = worker.New()
+func (j *Job) Create() error {
+	j.w = worker.New()
 
-	if hasDockerFile, r, err := m.getDockerfileFromTar(src); err != nil {
+	if hasDockerFile, r, err := getDockerfileFromSource(j); err != nil {
 		return err
 	} else if hasDockerFile {
-		if err := m.buildWithDockerfileIfExists(r); err != nil {
+		if err := buildWithDockerfileIfExists(j); err != nil {
 			return err
 		}
 	}
 
-	if err := m.w.Create(m.ctx); err != nil {
+	if err := j.w.Create(j.ctx); err != nil {
 		return err
 	}
 
-	if err := m.copyFileToContainer("./script/build.bash", "/"); err != nil {
+	if err := copyFileToContainer(j, "./script/build.bash", "/"); err != nil {
 		return err
 	}
 
-	if err := m.copyAppCodeToWorker(src); err != nil {
+	if err := copyAppCodeToWorker(j, src); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *JobManager) getDockerfileFromTar(tarPath string) (ok bool, nilReader io.Reader, err error) {
+func getDockerfileFromTar(j *Job) (ok bool, nilReader io.Reader, err error) {
 	var filename string = "Dockerfile"
 	tarball, err := os.Open(tarPath)
 	if err != nil {
@@ -55,27 +54,27 @@ func (m *JobManager) getDockerfileFromTar(tarPath string) (ok bool, nilReader io
 	}
 }
 
-func (m *JobManager) buildWithDockerfileIfExists(r io.Reader) error {
-	m.w.Image = uuid.NewV4().String()
-	if err := m.w.ImageBuild(m.ctx, r); err != nil {
+func buildWithDockerfileIfExists(j *Job, r io.Reader) error {
+	j.w.Image = uuid.NewV4().String()
+	if err := j.w.ImageBuild(j.ctx, r); err != nil {
 		return err
 	} else {
 		return nil
 	}
 }
 
-func (m *JobManager) copyAppCodeToWorker(tarPath string) error {
+func copyAppCodeToWorker(j *Job, tarPath string) error {
 	r, err := os.Open(tarPath)
 	if err != nil {
 		return err
 	}
-	return m.w.CopyToWorker(m.ctx, r, "/app")
+	return j.w.CopyToWorker(j.ctx, r, "/app")
 }
 
-func (m *JobManager) copyFileToContainer(src string, dst string) error {
+func copyFileToContainer(j *Job, src string, dst string) error {
 	r, err := util.ArchiveFile(src)
 	if err != nil {
 		return err
 	}
-	return m.w.CopyToWorker(m.ctx, r, dst)
+	return j.w.CopyToWorker(j.ctx, r, dst)
 }
