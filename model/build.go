@@ -38,3 +38,8 @@ func (b *Build) WriteLog(msg string) *gorm.DB {
 
 	return db.Model(b).UpdateColumn("log", b.Log)
 }
+
+func (b *Build) ResetLog() *gorm.DB {
+	b.Log = ""
+	return db.Model(b).UpdateColumn("log", b.Log)
+}
