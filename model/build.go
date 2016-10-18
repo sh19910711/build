@@ -10,6 +10,7 @@ type Build struct {
 	SourceFile []byte
 	Log        string
 	UpdatedAt  time.Time
+	ImageName  string // the name of the docker image
 }
 
 func All() []Build {
@@ -19,7 +20,7 @@ func All() []Build {
 }
 
 func Create(id int64) Build {
-	b := Build{}
+	b := Build{ImageName: "codestand/baseos"}
 	db.Create(&b)
 	return b
 }
@@ -29,5 +30,11 @@ func Find(b *Build) *gorm.DB {
 }
 
 func (b *Build) WriteLog(msg string) *gorm.DB {
-	return db.Model(b).UpdateColumn("log", b.Log+"\n"+msg)
+	if b.Log == "" {
+		b.Log = msg
+	} else {
+		b.Log += "\n" + msg
+	}
+
+	return db.Model(b).UpdateColumn("log", b.Log)
 }
