@@ -3,7 +3,6 @@
 package worker_test
 
 import (
-	_ "github.com/codestand/build/test/testhelper"
 	"github.com/codestand/build/worker"
 	"testing"
 )
