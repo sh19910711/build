@@ -1,80 +1,48 @@
 package job
 
 import (
+	"bytes"
+	"fmt"
+	"github.com/codestand/build/archive"
 	"github.com/codestand/build/worker"
-	uuid "github.com/satori/go.uuid"
-	"io"
-	"os"
 )
 
 func (j *Job) Create() error {
 	j.w = worker.New()
-
-	if hasDockerFile, r, err := getDockerfileFromSource(j); err != nil {
-		return err
-	} else if hasDockerFile {
-		if err := buildWithDockerfileIfExists(j); err != nil {
-			return err
-		}
-	}
+	j.w.Image = "build"
+	j.w.Cmd = []string{"bash", "/build.bash"}
 
 	if err := j.w.Create(j.ctx); err != nil {
 		return err
 	}
 
-	if err := copyFileToContainer(j, "./script/build.bash", "/"); err != nil {
+	if err := copyBuildScriptToContainer(j); err != nil {
 		return err
 	}
 
-	if err := copyAppCodeToWorker(j, src); err != nil {
+	if err := copyAppCodeToWorker(j); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func getDockerfileFromTar(j *Job) (ok bool, nilReader io.Reader, err error) {
-	var filename string = "Dockerfile"
-	tarball, err := os.Open(tarPath)
-	if err != nil {
-		return false, nilReader, err
-	}
-	defer tarball.Close()
-
-	if ok, err := util.CheckFileInTar(tarball, filename); err != nil {
-		return false, nilReader, err
-	} else if ok {
-		if r, err := util.ReadFileFromTar(tarball, "Dockerfile"); err != nil {
-			return false, nilReader, err
-		} else {
-			return true, r, nil
-		}
-	} else {
-		return false, nilReader, nil
-	}
-}
-
-func buildWithDockerfileIfExists(j *Job, r io.Reader) error {
-	j.w.Image = uuid.NewV4().String()
-	if err := j.w.ImageBuild(j.ctx, r); err != nil {
+func copyAppCodeToWorker(j *Job) error {
+	if app, err := j.B.AppTar(); err != nil {
 		return err
 	} else {
-		return nil
+		return j.w.CopyToWorker(j.ctx, app, "/app")
 	}
 }
 
-func copyAppCodeToWorker(j *Job, tarPath string) error {
-	r, err := os.Open(tarPath)
-	if err != nil {
-		return err
-	}
-	return j.w.CopyToWorker(j.ctx, r, "/app")
-}
+func copyBuildScriptToContainer(j *Job) error {
+	script := ""
+	script += fmt.Sprintln("#!/bin/bash")
+	script += fmt.Sprintln("make")
 
-func copyFileToContainer(j *Job, src string, dst string) error {
-	r, err := util.ArchiveFile(src)
+	r, err := archive.TarFromBuffer(bytes.NewBufferString(script), "build.bash").Reader()
 	if err != nil {
 		return err
 	}
-	return j.w.CopyToWorker(j.ctx, r, dst)
+	return j.w.CopyToWorker(j.ctx, r, "/")
 }
