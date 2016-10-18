@@ -14,11 +14,7 @@ type Worker struct {
 }
 
 func New() *Worker {
-	return &Worker{
-		c:     dockerClient,
-		Image: "build",
-		Cmd:   []string{"bash", "/build.bash"},
-	}
+	return &Worker{c: dockerClient}
 }
 
 func (w *Worker) Start(ctx context.Context) error {
