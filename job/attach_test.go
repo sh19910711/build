@@ -12,8 +12,7 @@ func TestAttach(t *testing.T) {
 	ctx, cancel := contextWithTimeout()
 	defer cancel()
 
-	b := getFakeBuild()
-	j := job.New(ctx, b)
+	j := job.New(ctx, FAKE_BUILD_ID)
 
 	if err := j.Create(); err != nil {
 		t.Fatal(err)

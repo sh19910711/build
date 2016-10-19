@@ -7,6 +7,12 @@ import (
 	"time"
 )
 
+func sleep(ms time.Duration) {
+	time.Sleep(ms * time.Millisecond)
+}
+
+const FAKE_BUILD_ID = 10000
+
 func contextWithTimeout() (context.Context, func()) {
 	return context.WithTimeout(context.Background(), 15*time.Second)
 }
@@ -20,9 +26,12 @@ func teardown() {
 }
 
 func getFakeBuild() *model.Build {
-	b := &model.Build{Id: 10000}
-	model.Find(b)
-	return b
+	b := &model.Build{Id: FAKE_BUILD_ID}
+	if model.Find(b).RecordNotFound() {
+		return nil
+	} else {
+		return b
+	}
 }
 
 func contains(str, sub string) bool {

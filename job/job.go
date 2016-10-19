@@ -12,7 +12,11 @@ type Job struct {
 	B   *model.Build
 }
 
-func New(ctx context.Context, b *model.Build) *Job {
+func New(ctx context.Context, buildId int64) *Job {
+	b := &model.Build{Id: buildId}
+	if model.Find(b).RecordNotFound() {
+		return nil
+	}
 	return &Job{
 		ctx: ctx,
 		B:   b,
