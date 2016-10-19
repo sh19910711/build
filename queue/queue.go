@@ -15,6 +15,24 @@ func New(name string) Queue {
 	return q
 }
 
+func (q *Queue) Reset() error {
+	for {
+		if q.Len() > 0 {
+			if _, err := q.Pop(); err != nil {
+				return err
+			}
+		} else {
+			break
+		}
+	}
+
+	return nil
+}
+
+func (q *Queue) Len() int64 {
+	return q.client.GetInputLength()
+}
+
 func (q *Queue) Push(payload string) error {
 	return q.client.Put(payload)
 }

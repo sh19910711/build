@@ -19,3 +19,24 @@ func TestPush(t *testing.T) {
 		}
 	}
 }
+
+func TestResetAndLen(t *testing.T) {
+	q := queue.New("test-reset-and-len")
+	q.Reset()
+	if q.Len() != 0 {
+		t.Fatal("the queue should be empty")
+	}
+	q.Push("hello1")
+	if q.Len() != 1 {
+		t.Fatal("the queue should contain an element")
+	}
+	q.Push("hello2")
+	q.Push("hello3")
+	if q.Len() != 3 {
+		t.Fatal("the queue should contain three elements")
+	}
+	q.Reset()
+	if q.Len() != 0 {
+		t.Fatal("the queue should be empty")
+	}
+}
