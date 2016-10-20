@@ -1,5 +1,3 @@
-// +build integration
-
 package worker_test
 
 import (
