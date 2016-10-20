@@ -6,5 +6,6 @@ import (
 
 func Mount() {
 	r := gin.Default()
+	r.POST("/builds/:id", Run)
 	r.Run()
 }
