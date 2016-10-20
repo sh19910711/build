@@ -5,12 +5,10 @@ import (
 )
 
 var q queue.Queue
-var newJobCh chan string
 var finishedCh chan struct{}
 
 func init() {
 	q = queue.New("jobqueue")
-	newJobCh = make(chan string)
 	finishedCh = make(chan struct{})
 }
 
