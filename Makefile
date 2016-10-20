@@ -1,4 +1,4 @@
-.PHONY: build release init sync
+.PHONY: build release init sync test
 
 build: sync
 	go build -i -o bin/app
@@ -9,6 +9,9 @@ release: sync
 sync:
 	govendor sync
 	mkdir -p bin
+
+test: sync
+	go test -v `go list ./... | grep -v "/vendor/"`
 
 init:
 	go get -u github.com/kardianos/govendor
