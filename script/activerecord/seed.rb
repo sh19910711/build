@@ -1,20 +1,20 @@
 require 'active_record'
 
 def setup
-	ActiveRecord::Base.establish_connection(
-		adapter: 'sqlite3',
-		database: '../../tmp/db.sqlite3',
-	)
+  ActiveRecord::Base.establish_connection(
+    adapter: 'sqlite3',
+    database: '../../tmp/db.sqlite3',
+  )
 end
 
 def define_schema
-	ActiveRecord::Schema.define do
-		create_table :builds do |t|
-			t.string :log
-			t.string :status
-			t.binary :source_file
-		end
-	end
+  ActiveRecord::Schema.define do
+    create_table :builds do |t|
+      t.string :log
+      t.string :status
+      t.binary :source_file
+    end
+  end
 end
 
 class Build < ActiveRecord::Base

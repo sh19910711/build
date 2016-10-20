@@ -5,8 +5,13 @@ sudo: required
 services:
   - docker
 
+install:
+  - make init
+  - bash ./script/activerecord/run.sh
+
 script:
-  - make build
+  - make
+  - DATABASE_URL=$PWD/tmp/db.sqlite3 make test
 
 deploy:
   provider: releases
