@@ -11,15 +11,11 @@ func TestPushAndPop(t *testing.T) {
 	job.Push("this-is-build-id")
 	job.Push("this-is-another-build-id")
 
-	if buildId, err := job.Pop(); err != nil {
-		t.Fatal(err)
-	} else if buildId != "this-is-build-id" {
+	if buildId := job.Pop(); buildId != "this-is-build-id" {
 		t.Fatal("the-build-id is wrong: " + buildId)
 	}
 
-	if buildId, err := job.Pop(); err != nil {
-		t.Fatal(err)
-	} else if buildId != "this-is-another-build-id" {
+	if buildId := job.Pop(); buildId != "this-is-another-build-id" {
 		t.Fatal("the-build-id is wrong: " + buildId)
 	}
 }

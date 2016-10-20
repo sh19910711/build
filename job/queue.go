@@ -4,7 +4,7 @@ import (
 	"github.com/codestand/build/queue"
 )
 
-var q queue.Queue
+var q *queue.Queue
 var finishedCh chan struct{}
 
 func init() {
@@ -16,18 +16,19 @@ func Push(buildId string) {
 	q.Push(buildId)
 }
 
-func Pop() (string, error) {
+func Pop() string {
 	return q.Pop()
 }
 
-func QueueLength() int64 {
+func QueueLength() int {
 	return q.Len()
 }
 
-func ResetQueue() error {
-	return q.Reset()
+func ResetQueue() {
+	q.Reset()
 }
 
 func Close() {
 	close(finishedCh)
+	q.Close()
 }

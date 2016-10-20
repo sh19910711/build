@@ -36,12 +36,9 @@ func Wait() error {
 func watchQueue() {
 	log.Debug("jobqueue#watch: started")
 	for {
-		if buildId, err := Pop(); err != nil {
-			log.Warn(err)
-		} else {
-			log.Debug("jobqueue#watch: build(" + buildId + ") was arrived")
-			newJobCh <- buildId
-		}
+		buildId := Pop()
+		log.Debug("jobqueue#watch: build(" + buildId + ") was arrived")
+		newJobCh <- buildId
 
 		select {
 		case <-finishedCh:
