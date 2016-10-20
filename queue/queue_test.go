@@ -12,9 +12,7 @@ func TestPush(t *testing.T) {
 	q.Push("hello3")
 
 	for _, expected := range []string{"hello1", "hello2", "hello3"} {
-		if msg, err := q.Pop(); err != nil {
-			t.Fatal(err)
-		} else if msg != expected {
+		if msg := q.Pop(); msg != expected {
 			t.Fatal("msg should be hello")
 		}
 	}

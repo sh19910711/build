@@ -1,59 +1,32 @@
 package queue
 
-import (
-	"github.com/adjust/redismq"
-)
-
+// TODO: use redis
 type Queue struct {
-	client   *redismq.Queue
-	consumer *redismq.Consumer
+	queue chan string
 }
 
-func New(name string) Queue {
-	q := Queue{client: redismq.CreateQueue("localhost", "6379", "", 0, name)}
-	q.listen()
-	return q
+func New(name string) *Queue {
+	return &Queue{queue: make(chan string, 10)}
 }
 
-func (q *Queue) Reset() error {
-	for {
-		if q.Len() > 0 {
-			if _, err := q.Pop(); err != nil {
-				return err
-			}
-		} else {
-			break
-		}
+func (q *Queue) Reset() {
+	for len(q.queue) > 0 {
+		<-q.queue
 	}
-
-	return nil
 }
 
-func (q *Queue) Len() int64 {
-	return q.client.GetInputLength()
+func (q *Queue) Len() int {
+	return len(q.queue)
 }
 
-func (q *Queue) Push(payload string) error {
-	return q.client.Put(payload)
+func (q *Queue) Push(item string) {
+	q.queue <- item
 }
 
-func (q *Queue) Pop() (msg string, err error) {
-	if p, err := q.consumer.Get(); err != nil {
-		return "", err
-	} else {
-		if err := p.Ack(); err != nil {
-			return "", err
-		}
-		msg = p.Payload
-	}
-	return msg, nil
+func (q *Queue) Pop() string {
+	return <-q.queue
 }
 
-func (q *Queue) listen() error {
-	if c, err := q.client.AddConsumer("consumer"); err != nil {
-		return err
-	} else {
-		q.consumer = c
-	}
-	return nil
+func (q *Queue) Close() {
+	close(q.queue)
 }
